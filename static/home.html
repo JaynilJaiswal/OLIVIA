@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>OLIVIA</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/location_ip_timezone.js"></script>
+    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+    <script type="text/javascript" src="../js/recording_emitting.js"></script>
+    <style>
+        body { background-image: url("../resources/VA_anim4-0.png"); background-repeat: no-repeat; background-size: 100%; background-position-y: -180px; background-color: rgb(6, 10, 27);}
+        h1 {text-align: center; color:#04d9ff;}
+        p {text-align: center;}
+        h2 {text-align: center; color: #04d9ff;}
+        ol {text-align: center; color: #04d9ff;}
+        div {
+            position: relative;
+            top: 60px;
+            left: 438px;
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>OLIVIA</h1>
+    <div id="mic-box" onclick="ListeningMode()"></div>
+    <audio id="output_voice" src="sounds/game-welcome.mp3" style="display:none;" autoplay></audio>
+    <ol id="recordingsList"></ol>
+</body>
+</html>
