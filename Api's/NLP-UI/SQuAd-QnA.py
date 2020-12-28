@@ -19,6 +19,7 @@ from flask import Flask, request
 from flask_restful import Api,Resource,reqparse
 app= Flask(__name__)
 api=Api(app)
+
 class QA:
     def __init__(self,model_path: str):
         self.max_seq_length = 384
@@ -89,14 +90,14 @@ modelQA = QA('model')
 
 doc = 'BERT is conceptually simple and empirically powerful. It obtains new state-of-the-art results on eleven natural language processing tasks, including pushing the GLUE benchmark to 80.4% (7.6% absolute improvement), MultiNLI accuracy to 86.7% (5.6% absolute improvement) and the SQuAD v1.1 question answering Test F1 to 93.2 (1.5 absolute improvement), outperforming human performance by 2.0.'
 
-class hello(Resource):
+class predict(Resource):
     def get(self):
         print(request.args['input_str'])
         query=request.args['input_str']
         results = modelQA.predict(doc,query)
         return {"result": results['answer']}
 
-api.add_resource(hello,"/")
+api.add_resource(predict,"/")
 
 if __name__ == "__main__":
     app.run(debug=True)
