@@ -23,6 +23,8 @@ function ProcessMode() {
 function SpeakingMode() {
     document.body.style.backgroundImage = "url(../resources/VA_anim4_speaking.gif)";
     setTimeout(reset, 3000)
+    document.getElementById('output_voice').src="../Audio_output_files/result.wav";
+    document.getElementById('output_voice').play();
     document.getElementById("mic-box").style.pointerEvents = "auto";
 }
 
