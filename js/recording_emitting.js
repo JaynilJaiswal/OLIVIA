@@ -4,6 +4,7 @@ URL = window.URL || window.webkitURL;
 var gumStream; 						//stream from getUserMedia()
 var rec; 							//Recorder.js object
 var input; 							//MediaStreamAudioSourceNode we'll be recording
+var duration;                       //output_audio duration
 
 // shim for AudioContext when it's not avb. 
 var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -23,8 +24,13 @@ function ProcessMode() {
 function SpeakingMode() {
     document.body.style.backgroundImage = "url(../resources/VA_anim4_speaking.gif)";
     setTimeout(reset, 3000)
-    document.getElementById('output_voice').src="../Audio_output_files/result.wav";
-    document.getElementById('output_voice').play();
+    var output_aud = document.getElementById('output_voice');
+    output_aud.src="../Audio_output_files/result.wav";
+    output_aud.addEventListener('loadedmetadata', function(){
+        duration = output_aud.duration;
+        output_aud.play();
+        console.log("The duration of the song is of: " + duration + " seconds");
+    },false);
     document.getElementById("mic-box").style.pointerEvents = "auto";
 }
 
