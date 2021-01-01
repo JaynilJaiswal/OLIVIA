@@ -36,7 +36,7 @@ function SpeakingMode(play) {
         },false);
         console.log("play")
     }
-    document.getElementById("mic-box").style.pointerEvents = "auto";
+    //document.getElementById("mic-box").style.pointerEvents = "auto";
 
 }
 
