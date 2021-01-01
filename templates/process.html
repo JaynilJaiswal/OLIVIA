@@ -10,7 +10,7 @@
     <style>
         body { background-image: url("../static/images/VA_anim4-0.png"); background-repeat: no-repeat; background-size: 100%; background-position-y: -180px; background-color: rgb(6, 10, 27);}
         h1 {text-align: center; color:#04d9ff;}
-        p {text-align: center; color:azure;}
+        p {text-align: center;}
         h2 {text-align: center; color: #04d9ff;}
         ol {text-align: center; color: #04d9ff;}
         div {
@@ -25,7 +25,7 @@
 <body>
     <h1>OLIVIA</h1>
     <div id="mic-box" onclick="ListeningMode()"></div>
-    <audio id="output_voice" style="display:none;" ></audio>
+    <audio id="output_voice" style="display:none;" autoplay></audio>
     <p>{{play}}</p>>
     <script type="text/javascript">
         SpeakingMode("{{play}}");

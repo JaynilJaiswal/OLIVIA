@@ -12,25 +12,30 @@ var audioContext //audio context to help us record
 
 function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
-    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
+    // document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     recordMode();
     ProcessMode();
 }
 
 function ProcessMode() {
-    document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
+    // document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
 }
 
-function SpeakingMode() {
+function SpeakingMode(play) {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
-    setTimeout(reset, 3000)
-    var output_aud = document.getElementById('output_voice');
-    output_aud.src="../static/Audio_output_files/result.wav";
-    output_aud.addEventListener('loadedmetadata', function(){
-        duration = output_aud.duration;
-        output_aud.play();
-        console.log("The duration of the song is of: " + duration + " seconds");
-    },false);
+    console.log(play);        
+    // setTimeout(reset, 3000);
+    if (play==1){
+        var output_aud = document.getElementById('output_voice');
+        output_aud.src="../static/Audio_output_files/result.wav";
+        output_aud.addEventListener('loadedmetadata', function(){
+            duration = output_aud.duration;
+            output_aud.muted-false;
+            output_aud.play();
+            console.log("The duration of the song is of: " + duration + " seconds");
+        },false);
+        console.log("play")
+    }
     document.getElementById("mic-box").style.pointerEvents = "auto";
 }
 
@@ -100,13 +105,15 @@ function uploadWAVFile(blob) {
     input.type="file";
     var filename = new Date().toISOString();
 
-    input.addEventListener("click", function(event){
-        var xhr=new XMLHttpRequest();
-        var fd=new FormData();
-        fd.append("audio_data",blob,filename+'.wav');
-        xhr.open("POST","http://127.0.0.1:5000/process",true);
-        xhr.send(fd);
-  })
-  $(input).click();
+    // input.addEventListener("click", function(event){
+    var xhr=new XMLHttpRequest();
+    var fd=new FormData();
+    fd.append("audio_data",blob,filename+'.wav');
+    xhr.open("POST","http://127.0.0.1:5000/home",true);
+    
+    xhr.send(fd);
+
+//   })
+//   $(input).click();
     
 }
