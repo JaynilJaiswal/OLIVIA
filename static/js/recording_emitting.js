@@ -40,7 +40,7 @@ function SpeakingMode(play) {
 }
 
 function reset() {
-    
+    window.location = "http://127.0.0.1:5000";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
 }
 
