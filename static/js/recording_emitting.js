@@ -12,19 +12,20 @@ var audioContext //audio context to help us record
 
 function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
-    // document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
+    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     recordMode();
     ProcessMode();
 }
 
 function ProcessMode() {
-    // document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
+    document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
+    window.location = "http://127.0.0.1:5000/process";
 }
 
 function SpeakingMode(play) {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
     console.log(play);        
-    // setTimeout(reset, 3000);
+    setTimeout(reset, 3000);
     if (play==1){
         var output_aud = document.getElementById('output_voice');
         output_aud.src="../static/Audio_output_files/result.wav";
@@ -37,6 +38,7 @@ function SpeakingMode(play) {
         console.log("play")
     }
     document.getElementById("mic-box").style.pointerEvents = "auto";
+
 }
 
 function reset() {
