@@ -23,23 +23,24 @@ function ProcessMode() {
 
 function SpeakingMode(play) {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
-    console.log(play);      
-    if (play==1){
+    console.log(play);
+    if (play == 1) {
         var output_aud = document.getElementById('output_voice');
-        output_aud.src="../static/Audio_output_files/result.wav";
-        output_aud.addEventListener('loadedmetadata', function(){
+        output_aud.src = "../static/Audio_output_files/result.wav";
+        output_aud.addEventListener('loadedmetadata', function () {
             duration = output_aud.duration;
-            output_aud.muted-false;
+            output_aud.muted - false;
             output_aud.play();
             console.log("The duration of the song is of: " + duration + " seconds");
-        },false);
+        }, false);
         console.log("play")
-    }  
-    setTimeout(reset, document.getElementById("output_voice").duration);
+    }
+    document.getElementById("output_voice").style.pointerEvents = "auto";
+    setTimeout(reset, duration);
 }
 
 function reset() {
-    window.location = "http://127.0.0.1:5000/";
+    
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
 }
 
@@ -93,7 +94,7 @@ function recordMode() {
     }).catch(function (err) { });
 }
 
-function blobToFile(theBlob, fileName){
+function blobToFile(theBlob, fileName) {
     //A Blob() is almost a File() - it's just missing the two properties below which we will add
     theBlob.lastModifiedDate = new Date();
     theBlob.name = fileName;
@@ -101,19 +102,19 @@ function blobToFile(theBlob, fileName){
 }
 
 function uploadWAVFile(blob) {
-    var input=document.createElement('input');
-    input.type="file";
+    var input = document.createElement('input');
+    input.type = "file";
     var filename = new Date().toISOString();
 
     // input.addEventListener("click", function(event){
-    var xhr=new XMLHttpRequest();
-    var fd=new FormData();
-    fd.append("audio_data",blob,filename+'.wav');
-    xhr.open("POST","http://127.0.0.1:5000/",true);
-    
+    var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    fd.append("audio_data", blob, filename + '.wav');
+    xhr.open("POST", "http://127.0.0.1:5000/", true);
+
     xhr.send(fd);
 
-//   })
-//   $(input).click();
-    
+    //   })
+    //   $(input).click();
+
 }
