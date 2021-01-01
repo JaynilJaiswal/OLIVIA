@@ -22,7 +22,6 @@ function ProcessMode() {
 }
 
 function SpeakingMode(play) {
-    window.location = "http://127.0.0.1:5000/process";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
     console.log(play);        
     setTimeout(reset, 3000);
