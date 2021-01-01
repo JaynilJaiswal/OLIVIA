@@ -5,13 +5,11 @@ app = Flask(__name__)
 app.secret_key = 'random'
 @app.route('/',methods=['GET','POST'])
 def home():
-
     if request.method=='GET':
         # global play
         session['play']=0
         print(session['play'])
-        return render_template('home.html',play=session['play'])
-
+        return render_template('index.html',play=session['play'])
     if request.method=='POST':
         f  = request.files['audio_data']
         # print(f)
@@ -21,12 +19,10 @@ def home():
         # global play
         session['play']=1
         print(session['play'])
-
         # return redirect(url_for('home',play=play))
-        # return render_template('home.html',play=session['play'])
+        # return render_template('index.html',play=session['play'])
         return redirect('http://127.0.0.1:5000/process',code=200)
-    # return render_template('home.html',play=session['play'])
-
+    # return render_template('index.html',play=session['play'])
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='GET':
@@ -43,7 +39,7 @@ def process():
 #         global play
 #         play=1
 #         return redirect(url_for('home',play=play))
-        # return render_template('home.html',play=play)
+        # return render_template('index.html',play=play)
 
 if __name__ == "__main__":
     app.run(debug=True)

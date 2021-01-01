@@ -23,8 +23,7 @@ function ProcessMode() {
 
 function SpeakingMode(play) {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
-    console.log(play);        
-    setTimeout(reset, 3000);
+    console.log(play);      
     if (play==1){
         var output_aud = document.getElementById('output_voice');
         output_aud.src="../static/Audio_output_files/result.wav";
@@ -35,12 +34,12 @@ function SpeakingMode(play) {
             console.log("The duration of the song is of: " + duration + " seconds");
         },false);
         console.log("play")
-    }
-    //document.getElementById("mic-box").style.pointerEvents = "auto";
-
+    }  
+    setTimeout(reset, document.getElementById("output_voice").duration);
 }
 
 function reset() {
+    window.location = "http://127.0.0.1:5000/";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
 }
 
