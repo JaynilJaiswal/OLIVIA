@@ -19,7 +19,6 @@ function ListeningMode() {
 
 function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
-    window.location = "http://127.0.0.1:5000/process";
 }
 
 function SpeakingMode(play) {
@@ -111,7 +110,7 @@ function uploadWAVFile(blob) {
     var xhr=new XMLHttpRequest();
     var fd=new FormData();
     fd.append("audio_data",blob,filename+'.wav');
-    xhr.open("POST","http://127.0.0.1:5000/home",true);
+    xhr.open("POST","http://127.0.0.1:5000/",true);
     
     xhr.send(fd);
 

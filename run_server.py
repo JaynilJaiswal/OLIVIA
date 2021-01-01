@@ -3,7 +3,7 @@ from flask import Flask,render_template,request,redirect,url_for,session
 import jsonify
 app = Flask(__name__)
 app.secret_key = 'random'
-@app.route('/home',methods=['GET','POST'])
+@app.route('/',methods=['GET','POST'])
 def home():
 
     if request.method=='GET':
