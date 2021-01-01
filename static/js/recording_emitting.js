@@ -24,19 +24,20 @@ function ProcessMode() {
 function SpeakingMode(play) {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
     console.log(play);
-    if (play == 1) {
-        var output_aud = document.getElementById('output_voice');
-        output_aud.src = "../static/Audio_output_files/result.wav";
-        output_aud.addEventListener('loadedmetadata', function () {
-            duration = output_aud.duration;
-            output_aud.muted - false;
-            output_aud.play();
-            console.log("The duration of the song is of: " + duration + " seconds");
-        }, false);
-        console.log("play")
-    }
-    document.getElementById("output_voice").style.pointerEvents = "auto";
-    setTimeout(reset, duration);
+
+    var output_aud = document.getElementById('output_voice');
+    output_aud.src = "../static/Audio_output_files/result.wav";
+
+    output_aud.style.pointerEvents = "auto";
+
+    output_aud.addEventListener('loadedmetadata', function () {
+        duration = output_aud.duration;
+        output_aud.muted - false;
+        output_aud.play();
+        console.log("The duration of the song is of: " + duration + " seconds");
+        console.log("playing");
+        setTimeout(reset, duration*1000);
+    }, false);
 }
 
 function reset() {

@@ -5,7 +5,6 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <title>OLIVIA</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script type="text/javascript" src="../static/js/location_ip_timezone.js"></script>
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
     <script type="text/javascript" src="../static/js/recording_emitting.js"></script>
     <style>
@@ -26,9 +25,8 @@
 <body>
     <h1>OLIVIA</h1>
     <audio id="output_voice" style="display:none;" autoplay></audio>
-    <p>{{play}}</p>
     <script type="text/javascript">
-        SpeakingMode("{{play}}");
+        SpeakingMode(1);
     </script>
     <ol id="recordingsList"></ol>
 </body>

@@ -21,8 +21,9 @@ def home():
         print(session['play'])
         # return redirect(url_for('home',play=play))
         # return render_template('index.html',play=session['play'])
-        return redirect('http://127.0.0.1:5000/process',code=200)
+        return redirect(url_for('process'))
     # return render_template('index.html',play=session['play'])
+
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='GET':
