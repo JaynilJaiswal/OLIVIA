@@ -21,10 +21,8 @@ function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
 }
 
-function SpeakingMode(play) {
+function SpeakingMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
-    console.log(play);
-
     var output_aud = document.getElementById('output_voice');
     output_aud.src = "../static/Audio_output_files/result.wav";
 
@@ -41,7 +39,6 @@ function SpeakingMode(play) {
 }
 
 function reset() {
-    window.location = "http://127.0.0.1:5000";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
 }
 
@@ -111,10 +108,9 @@ function uploadWAVFile(blob) {
     var xhr = new XMLHttpRequest();
     var fd = new FormData();
     fd.append("audio_data", blob, filename + '.wav');
-    xhr.open("POST", "http://127.0.0.1:5000/", true);
+    xhr.open("POST", "http://127.0.0.1:5000/process", true);
 
     xhr.send(fd);
-
     //   })
     //   $(input).click();
 
