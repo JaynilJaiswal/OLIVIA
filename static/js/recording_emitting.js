@@ -18,13 +18,12 @@ function ListeningMode() {
 
 function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
-
     var xhttp = new XMLHttpRequest();
     xhttp.open('GET',"http://127.0.0.1:5000/process",false);
     do{
-        sleep(200);
-        xhttp.open('GET',"http://127.0.0.1:5000/process",false);
-        xhttp.send(null);
+        sleep(1000);
+        xhttp.open('POST',"http://127.0.0.1:5000/check",false);
+        xhttp.send();
         // console.log(xhttp.responseText);
         var req = xhttp.responseText;
     }while(req=="no");
@@ -41,20 +40,47 @@ function sleep(milliseconds) {
 
 function SpeakingMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
-    var output_aud = document.getElementById('output_voice');
-    output_aud.src = "../static/Audio_output_files/result.wav";
-
-    output_aud.style.pointerEvents = "auto";
-
-    output_aud.addEventListener('loadedmetadata', function () {
-        duration = output_aud.duration;
-        output_aud.muted - false;
-        output_aud.play();
-        console.log("The duration of the song is of: " + duration + " seconds");
-        console.log("playing");
-        setTimeout(reset, duration*1000);
-    }, false);
-
+     async function fetchAudio(word) {
+        const requestOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ "word": word })
+        };  let url = 'http://127.0.0.1:5000/check';
+        // fetch() returns a promise that
+        // resolves once headers have been received
+        return fetch(url, requestOptions)
+          .then(res => {
+            if (!res.ok)
+              throw new Error(`${res.status} = ${res.statusText}`);      // response.body is a readable stream.
+            // Calling getReader() gives us exclusive access to
+            // the stream's content      
+            var reader = res.body.getReader();
+            // read() returns a promise that resolves
+            // when a value has been received      
+            return reader
+              .read()
+              .then((result) => {
+                return result;
+              });
+          })
+      }
+      fetchAudio("check")
+      .then((response) => {
+        // response.value for fetch streams is a Uint8Array
+        var blob = new Blob([response.value], { type: 'audio/x-wav' });
+        var url = window.URL.createObjectURL(blob)
+        window.audio = new Audio();
+        window.audio.src = url;
+        window.audio.load();
+        window.audio.play();
+      })
+      .catch((error) => {
+        this.setState({
+            error: error.message
+        });
+      });
     document.getElementById("mic-box").style.pointerEvents = "auto";
 }
 
