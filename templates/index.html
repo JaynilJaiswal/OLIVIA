@@ -7,6 +7,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
     <script type="text/javascript" src="../static/js/recording_emitting.js"></script>
+    <script type="text/javascript" src="../static/js/location_ip_timezone.js"></script>
     <style>
         body { background-image: url("../static/images/VA_anim4-0.png"); background-repeat: no-repeat; background-size: 100%; background-position-y: -180px; background-color: rgb(6, 10, 27);}
         h1 {text-align: center; color:#04d9ff;}
@@ -26,25 +27,5 @@
     <h1>OLIVIA</h1>
     <div id="mic-box" onclick="ListeningMode()"></div>
     <audio id="output_voice" style="display:none;" autoplay></audio>
-    <script type="text/javascript">
-        function sleep(milliseconds) {
-            const date = Date.now();
-            let currentDate = null;
-            do {
-                currentDate = Date.now();
-            } while (currentDate - date < milliseconds);
-        }
-        var xhttp = new XMLHttpRequest();
-        xhttp.open('GET',"http://127.0.0.1:5000/process",false);
-        do{
-            sleep(200);
-            xhttp.open('GET',"http://127.0.0.1:5000/process",false);
-            xhttp.send(null);
-            // console.log(xhttp.responseText);
-            var req = xhttp.responseText;
-        }while(req=="no");
-        SpeakingMode();
-    </script>
-    <ol id="recordingsList"></ol>
 </body>
 </html>

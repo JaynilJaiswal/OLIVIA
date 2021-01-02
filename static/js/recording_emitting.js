@@ -14,11 +14,29 @@ function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     recordMode();
-    ProcessMode();
 }
 
 function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.open('GET',"http://127.0.0.1:5000/process",false);
+    do{
+        sleep(200);
+        xhttp.open('GET',"http://127.0.0.1:5000/process",false);
+        xhttp.send(null);
+        // console.log(xhttp.responseText);
+        var req = xhttp.responseText;
+    }while(req=="no");
+    SpeakingMode();
+}
+
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
 }
 
 function SpeakingMode() {
@@ -36,6 +54,8 @@ function SpeakingMode() {
         console.log("playing");
         setTimeout(reset, duration*1000);
     }, false);
+
+    document.getElementById("mic-box").style.pointerEvents = "auto";
 }
 
 function reset() {
@@ -87,6 +107,8 @@ function recordMode() {
             //tell the recorder to stop the recording
 
             console.log("Recording done")
+
+            ProcessMode();
 
         }, 5100);
     }).catch(function (err) { });
