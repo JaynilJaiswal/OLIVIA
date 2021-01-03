@@ -59,9 +59,17 @@ function SpeakingMode() {
     };
     xhttp.send();
 
-    duration = output_aud.duration;
-    console.log("The duration of the song is of: " + output_aud.duration + " seconds");
-    setTimeout(reset(),duration*1000);
+    var xhr = new XMLHttpRequest();
+    xhttp.responseType = 'text';
+    var req = "stay";
+    
+    // do{
+    //   xhr.open('GET',"http://127.0.0.1:5000/fetch_output_audio",true);
+    //     xhr.send();
+    //     req = xhr.responseText;
+    // }while(req != "output file removed")
+
+    // if (req == "output file removed"){reset();}
     
 }
 
