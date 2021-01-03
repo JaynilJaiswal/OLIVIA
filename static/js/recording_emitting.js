@@ -14,7 +14,6 @@ function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     recordMode();
-    // ProcessMode();
 }
 
 function ProcessMode() {
@@ -72,10 +71,11 @@ function SpeakingMode() {
         // response.value for fetch streams is a Uint8Array
         var blob = new Blob([response.value], { type: 'audio/x-wav' });
         var url = window.URL.createObjectURL(blob)
-        window.audio = new Audio();
-        window.audio.src = url;
-        window.audio.load();
-        window.audio.play();
+        // window.audio = new Audio();
+        output_aud = document.getElementById('output_voice'); 
+        output_aud.src = url;
+        // output_aud.load();
+        output_aud.play();
       })
       .catch((error) => {
         this.setState({
@@ -96,28 +96,14 @@ function recordMode() {
     navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
         console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
 
-        /*
-            create an audio context after getUserMedia is called
-            sampleRate might change after getUserMedia is called, like it does on macOS when recording through AirPods
-            the sampleRate defaults to the one set in your OS for your playback device
-
-        */
         audioContext = new AudioContext();
 
-
-        /*  assign to gumStream for later use  */
         gumStream = stream;
 
-        /* use the stream */
         input = audioContext.createMediaStreamSource(stream);
 
-        /* 
-            Create the Recorder object and configure to record mono sound (1 channel)
-            Recording 2 channels  will double the file size
-        */
         rec = new Recorder(input, { numChannels: 1 })
 
-        //start the recording process
         rec.record()
 
         console.log("Recording started");
@@ -126,23 +112,23 @@ function recordMode() {
 
             rec.stop();
 
-            //stop microphone access
             gumStream.getAudioTracks()[0].stop();
 
-            //create the wav blob and pass it on to uploadWAVFile
             rec.exportWAV(uploadWAVFile);
-            //tell the recorder to stop the recording
 
             console.log("Recording done")
 
             ProcessMode();
 
         }, 5100);
-    }).catch(function (err) { });
+    }).catch((error) => {
+      this.setState({
+          error: error.message
+      });
+    });
 }
 
 function blobToFile(theBlob, fileName) {
-    //A Blob() is almost a File() - it's just missing the two properties below which we will add
     theBlob.lastModifiedDate = new Date();
     theBlob.name = fileName;
     return theBlob;
@@ -153,14 +139,11 @@ function uploadWAVFile(blob) {
     input.type = "file";
     var filename = new Date().toISOString();
 
-    // input.addEventListener("click", function(event){
     var xhr = new XMLHttpRequest();
     var fd = new FormData();
     fd.append("audio_data", blob, filename + '.wav');
     xhr.open("POST", "http://127.0.0.1:5000/process", true);
 
     xhr.send(fd);
-    //   })
-    //   $(input).click();
 
 }
