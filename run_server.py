@@ -11,7 +11,7 @@ import time
 
 STT_href = "http://ecf1af5381ed.ngrok.io/"
 TTS_href = "http://05eebc8e95b6.ngrok.io/"
-NLU_href = "http://4eb34aba095b.ngrok.io/"
+NLU_href = "http://c9638bd7a68b.ngrok.io/"
 preprocess_href = "http://127.0.0.1:5040/"
 
 base_inp_dir = "Audio_input_files/"
@@ -25,6 +25,8 @@ output_audio_ready = "no"
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 
 def backend_pipeline(request):
+    
+    global output_audio_ready
     
     output_audio_ready = "no"
 
@@ -41,6 +43,8 @@ def backend_pipeline(request):
     #preprocess   
     text = input_str    
     if 'olivia' in text:
+        text = text.split('olivia')[1].strip()
+    if 'alivia' in text:
         text = text.split('olivia')[1].strip()
     if 'olvia' in text:
         text = text.split('olvia')[1].strip()

@@ -23,10 +23,11 @@ function ProcessMode() {
     // xhttp.open('GET',"http://127.0.0.1:5000/check",false);
     do{
         sleep(1000);
-        xhttp.open('GET',"http://127.0.0.1:5000/check_audio_available",true);
+        xhttp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
         xhttp.send();
         req = xhttp.responseText;
     }while(req=="no");
+    console.log("Speaking mode");
     SpeakingMode();
 }
 
@@ -48,21 +49,25 @@ function SpeakingMode() {
     xhttp.setRequestHeader('Content-Type', 'application/json');
     xhttp.responseType = 'blob';
     xhttp.onload = function(evt) {
-      var blob = new Blob([xhttp.response], {type: 'audio/wav'});
-      var objectUrl = URL.createObjectURL(blob);
+        var blob = new Blob([xhttp.response], {type: 'audio/wav'});
+        var objectUrl = URL.createObjectURL(blob);
 
-      output_aud.src = objectUrl;
-      // Release resource when it's loaded
-      output_aud.onload = function(evt) {
-        URL.revokeObjectURL(objectUrl);        
-      };
+        output_aud.src = objectUrl;
+        // Release resource when it's loaded
+        output_aud.onload = function(evt) {
+            URL.revokeObjectURL(objectUrl);     
+        };
+        output_aud.load();
+        output_aud.play();  
     };
     xhttp.send();
 
-    var xhr = new XMLHttpRequest();
-    xhttp.responseType = 'text';
-    var req = "stay";
-    
+    reset();
+
+    // var xhr = new XMLHttpRequest();
+    // xhttp.responseType = 'text';
+    // var req = "stay";
+
     // do{
     //   xhr.open('GET',"http://127.0.0.1:5000/fetch_output_audio",true);
     //     xhr.send();
@@ -107,8 +112,6 @@ function recordMode() {
 
             console.log("Recording done")
 
-            ProcessMode();
-
         }, 5100);
     }).catch((error) => {
       this.setState({
@@ -134,5 +137,7 @@ function uploadWAVFile(blob) {
     xhr.open("POST", "http://127.0.0.1:5000/process", true);
 
     xhr.send(fd);
+
+    ProcessMode();
 
 }
