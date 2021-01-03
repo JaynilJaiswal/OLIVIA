@@ -14,12 +14,13 @@ function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     recordMode();
+    // ProcessMode();
 }
 
 function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
     var xhttp = new XMLHttpRequest();
-    xhttp.open('GET',"http://127.0.0.1:5000/process",false);
+    // xhttp.open('GET',"http://127.0.0.1:5000/check",false);
     do{
         sleep(1000);
         xhttp.open('POST',"http://127.0.0.1:5000/check",false);

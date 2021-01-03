@@ -99,19 +99,19 @@ def create_manifest(file_path):
     return file_path+".json"
 
 
-class hello(Resource):
+class STT(Resource):
     def post(self):
         f=request.files['file']
-        data,sr=librosa.load(f,sr=16000)
+        data,sr=librosa.load(f.stream,sr=16000)
         data = (data*32767).astype(np.int16)
         wavfile.write('result.wav',16000,data.astype(np.int16))
         print(sr)
         result = wav_to_text(create_manifest('result.wav'))
         return {"text": result}
 
-api.add_resource(hello,"/")
+api.add_resource(STT,"/")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.2",debug=True)
 
 

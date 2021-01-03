@@ -4,8 +4,8 @@ import io
 from pydub import AudioSegment
 import numpy as np
 
-base="http://127.0.0.1:5000/"
-payload={"input_str":"How are you?"}
+base="http://4331bdaf2a7f.ngrok.io/"
+payload={"input_str":"what's the time right now?"}
 r = requests.get(base, params=payload).json()
 print(r['rate'])
 # open('result.wav','wb').write(r.content)
@@ -16,5 +16,5 @@ write(byte_io, r['rate'], np.array(r['data'],np.int16))
 print(bytes_wav)
 output_wav = byte_io.read() 
 # print(output_wav)
-with open('result.wav','bx') as f:
+with open('result.wav','wb') as f:
     f.write(output_wav)
