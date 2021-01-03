@@ -21,9 +21,10 @@ def home():
 def process():
     if request.method=='POST':
         f  = request.files['audio_data']
-        with open(f.filename,'wb') as audio:
+        base_inp_dir = "Audio_input_files/"
+        with open(base_inp_dir + f.filename,'wb') as audio:
             f.save(audio)
-        payload={'file':open(f.filename,'rb')}
+        payload={'file':open(base_inp_dir + f.filename,'rb')}
         r = requests.post(STT_href,files=payload)
         input_str=json.loads(r.text)['text'][0]
         print (input_str)
@@ -38,18 +39,25 @@ def process():
         # print(output_wav)
         with open('Audio_output_files/result.wav','wb') as f:
             f.write(output_wav)
-        # time.sleep(2)
-        # if os.path.exists('static/Audio_output_files/result.wav'):
-        #     os.remove('static/Audio_output_files/result.wav')
+        time.sleep(2)
+        if os.path.exists('Audio_output_files/result.wav'):
+            os.remove('Audio_output_files/result.wav')
         return "OK"
-@app.route('/check', methods=['GET','POST'])
-def check():
-    if request.method=="POST":
+
+@app.route('/check_audio_available', methods=['GET'])
+def check_audio_available():
+    if request.method=="GET":
         if os.path.exists('Audio_output_files/result.wav'):
             # payload={'play':1 , 'file': open('Audio_output_files/result.wav','rb')}
-            print("yes")
-            return send_file('Audio_output_files/result.wav',mimetype="audio/x-wav",as_attachment=True,attachment_filename='result.wav')
+            return "yes"
         else:
             return "no"
+
+@app.route('/fetch_output_audio', methods=['POST'])
+def fetch_output_audio():
+        if request.method=="POST":
+            return send_file('Audio_output_files/result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.wav')
+
+
 if __name__ == "__main__":
     app.run(debug=True)
