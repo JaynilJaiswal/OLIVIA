@@ -7,11 +7,17 @@ import io
 import json
 from pydub import AudioSegment
 import numpy as np
-import time
+from timezonefinder import TimezoneFinder
+from geopy.geocoders import Nominatim
+geolocator = Nominatim(user_agent="geoapiExercises") 
 
-STT_href = "http://ecf1af5381ed.ngrok.io/"
-TTS_href = "http://05eebc8e95b6.ngrok.io/"
-NLU_href = "http://c9638bd7a68b.ngrok.io/"
+from features.time import getTime
+from features.date import getDate
+from features.weather import getWeather
+from features.location import getLocation
+STT_href = "http://287a12e85f2c.ngrok.io/"
+TTS_href = "http://e3c0b65d1cb7.ngrok.io/"
+NLU_href = "http://54f7f051f50d.ngrok.io/"
 preprocess_href = "http://127.0.0.1:5040/"
 
 base_inp_dir = "Audio_input_files/"
@@ -21,10 +27,20 @@ app = Flask(__name__)
 app.secret_key = 'random'
 
 output_audio_ready = "no"
-
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
+# FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
+def select_feature(name,user_data):
+    if name=="time":
+        return getTime(user_data["timezone"])
+    if name=='date':
+        return getDate(user_data["timezone"])
+    if name=='weather':
+        return getWeather(user_data['address']['city'])
+    if name=='location':
+        return getLocation(user_data['address'])
 
-def backend_pipeline(request):
+
+def backend_pipeline(request,user_data):
     
     global output_audio_ready
     
@@ -60,8 +76,10 @@ def backend_pipeline(request):
 
     #NLU
     r = requests.get(NLU_href,json={"sentence":text}).json()
-    print("Most related feature : "+str(r['Most related feature']))
-
+    print("Most related feature : "+str(r['Most related feature'][0][0]))
+    
+    #Feature
+    input_str = select_feature(r['Most related feature'][0][0],user_data)
     #TTS        
     payload={"input_str": input_str }
     r = requests.get(TTS_href, params=payload).json()
@@ -87,12 +105,20 @@ def backend_pipeline(request):
 def home():
     if request.method=='GET':
         return render_template('index.html')
+    if request.method=="POST":
+        user_location =json.loads(request.form['data'])
+        tf = TimezoneFinder()
+        user_timezone = tf.timezone_at(lng=user_location['long'],lat=user_location['lat'])
+        user_address = geolocator.reverse(str(user_location['lat'])+','+str(user_location['long'])).raw['address']
+        session['user_data']= {'location':user_location,'timezone':user_timezone,'address':user_address}
+        print (session['user_data'])
+        return "saved"
 
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='POST':
 
-        backend_pipeline(request)
+        backend_pipeline(request,session['user_data'])
         
         return "OK"
 

@@ -1,0 +1,2 @@
+def getLocation(address):
+    return "Sir, your current location is in city "+address['city']+", district "+address['state_district']+" and state "+address['state']+"in "+address['country']+". Your postal code is "+address['postcode']+"."
