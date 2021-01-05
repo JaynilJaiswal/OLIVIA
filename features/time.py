@@ -5,6 +5,8 @@ def getTime(timezone):
     time_tz = datetime.now(tz)
     mm = time_tz.strftime("%M")
     if int(mm)==0:
-        return "Sir, the time right now is "+time_tz.strftime("%I %p.")
+        output_time =  "Sir, the time right now is "+time_tz.strftime("%I %p.")
+        return output_time.replace("AM","A.M.").replace("PM","P.M.")
     else:
-        return "Sir, the time right now is "+time_tz.strftime("%I %M %p.")
+        output_time =  "Sir, the time right now is "+time_tz.strftime("%I %M %p.")
+        return output_time.replace("AM","A.M.").replace("PM","P.M.")

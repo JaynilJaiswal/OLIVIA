@@ -15,9 +15,9 @@ from features.time import getTime
 from features.date import getDate
 from features.weather import getWeather
 from features.location import getLocation
-STT_href = "http://287a12e85f2c.ngrok.io/"
-TTS_href = "http://e3c0b65d1cb7.ngrok.io/"
-NLU_href = "http://54f7f051f50d.ngrok.io/"
+STT_href = "http://76dd5970815d.ngrok.io/"
+TTS_href = "http://6803a4470549.ngrok.io/"
+NLU_href = "http://3f58131147b6.ngrok.io/"
 preprocess_href = "http://127.0.0.1:5040/"
 
 base_inp_dir = "Audio_input_files/"
@@ -29,6 +29,7 @@ app.secret_key = 'random'
 output_audio_ready = "no"
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 # FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
+
 def select_feature(name,user_data):
     if name=="time":
         return getTime(user_data["timezone"])
@@ -77,6 +78,13 @@ def backend_pipeline(request,user_data):
     #NLU
     r = requests.get(NLU_href,json={"sentence":text}).json()
     print("Most related feature : "+str(r['Most related feature'][0][0]))
+    print("\n")
+    print("====================================================================")
+    print("=========================Complete result============================")
+    print(str(r['Most related feature']))
+    print("====================================================================")
+    print("====================================================================")
+    print("\n")
     
     #Feature
     input_str = select_feature(r['Most related feature'][0][0],user_data)
