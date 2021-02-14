@@ -13,7 +13,7 @@ var audioContext //audio context to help us record
 function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
-    recordMode();
+    recordMode(5);
 }
 
 function ProcessMode() {
@@ -83,7 +83,7 @@ function reset() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
 }
 
-function recordMode() {
+function recordMode(times) {
 
     var constraints = { audio: true, video: false }
 
@@ -110,9 +110,11 @@ function recordMode() {
 
             rec.exportWAV(uploadWAVFile);
 
-            console.log("Recording done")
-
-        }, 5100);
+            console.log("Recording done");
+            if (times>1){
+                recordMode(times-1);
+            }
+        }, 3000);
     }).catch((error) => {
       this.setState({
           error: error.message
@@ -138,6 +140,6 @@ function uploadWAVFile(blob) {
 
     xhr.send(fd);
 
-    ProcessMode();
+    // ProcessMode();
 
 }

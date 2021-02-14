@@ -7,6 +7,7 @@ import io
 import json
 from pydub import AudioSegment
 import numpy as np
+import librosa
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="geoapiExercises") 
@@ -25,7 +26,8 @@ base_out_dir = "Audio_output_files/"
 
 app = Flask(__name__)
 app.secret_key = 'random'
-
+data=[]
+sr=0
 output_audio_ready = "no"
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 # FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
@@ -125,8 +127,12 @@ def home():
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='POST':
-
-        backend_pipeline(request,session['user_data'])
+        global data,sr,output_audio_ready
+        temp,sr=librosa.load(request.files['audio_data'])
+        data=np.append(data,temp)
+        librosa.output.write_wav(base_out_dir+'result.wav',data,sr)
+        output_audio_ready="yes"
+        # backend_pipeline(request,session['user_data'])
         
         return "OK"
 
