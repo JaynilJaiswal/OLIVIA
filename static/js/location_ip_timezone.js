@@ -11,7 +11,7 @@ $(window).on('load',function(){
     "Longitude: " + position.coords.longitude);
     $.ajax({
       type: 'POST',
-      url: "http://127.0.0.1:5000/",
+      url: "http://127.0.0.1:5000/home",
       data: { 'data': JSON.stringify({ 'lat': position.coords.latitude, 'long': position.coords.longitude }) }
     });
   }

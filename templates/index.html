@@ -1,31 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-    <title>OLIVIA</title>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
-    <script type="text/javascript" src="../static/js/recording_emitting.js"></script>
-    <script type="text/javascript" src="../static/js/location_ip_timezone.js"></script>
-    <style>
-        body { background-image: url("../static/images/VA_anim4-0.png"); background-repeat: no-repeat; background-size: 100%; background-position-y: -180px; background-color: rgb(6, 10, 27);}
-        h1 {text-align: center; color:#04d9ff;}
-        p  {text-align: center;}
-        h2 {text-align: center; color: #04d9ff;}
-        ol {text-align: center; color: #04d9ff;}
-        div {
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {background-image: url("../static/images/front_wallpaper.jpg"); background-repeat: no-repeat; background-size: 100%;  background-position-y: -50px; background-color: rgb(6, 10, 27);background-color: rgb(6, 10, 27); font-family: Arial, Helvetica, sans-serif;}
+            /* Full-width input fields */
+            input[type=text], input[type=password] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            }
+
+            /* Set a style for all buttons */
+            button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            }
+
+            h1 {text-align: center; color:#04d9ff;}
+
+            button:hover {
+            opacity: 0.9;
+            }
+
+            /* Extra styles for the cancel button */
+            .cancelbtn {
+            width: auto;
+            padding: 10px 18px;
+            background-color: #f44336;
+            }
+
+            /* Center the image and position the close button */
+            .imgcontainer {
+            text-align: center;
+            margin: 24px 0 12px 0;
             position: relative;
-            top: 60px;
-            left: 438px;
-            width: 400px;
-            height: 400px;
-        }
-    </style>
-</head>
-<body>
-    <h1>OLIVIA</h1>
-    <div id="mic-box" onclick="ListeningMode()"></div>
-    <audio id="output_voice" style="display:none;" autoplay></audio>
-</body>
+            }
+
+            img.avatar {
+            width: 20%;
+            height: 20%;
+            border-radius: 50%;
+            }
+
+            .container {
+            padding: 16px;
+            }
+
+            span.psw {
+            float: right;
+            padding-top: 5px;
+            }
+
+            /* The Close Button (x) */
+            .close {
+            position: absolute;
+            right: 25px;
+            top: 0;
+            color: #000;
+            font-size: 35px;
+            font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+            color: red;
+            cursor: pointer;
+            }
+
+            /* Add Zoom Animation */
+            .animate {
+            -webkit-animation: animatezoom 0.6s;
+            animation: animatezoom 0.6s
+            }
+
+            @-webkit-keyframes animatezoom {
+            from {-webkit-transform: scale(0)} 
+            to {-webkit-transform: scale(1)}
+            }
+            
+            @keyframes animatezoom {
+            from {transform: scale(0)} 
+            to {transform: scale(1)}
+            }
+
+            /* Change styles for span and cancel button on extra small screens */
+            @media screen and (max-width: 300px) {
+            span.psw {
+                display: block;
+                float: none;
+            }
+            .cancelbtn {
+                width: 100%;
+            }
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Welcome to OLIVIA webapp!</h1>
+        <form action="/login" method="GET">
+            <button type="submit" onclick="document.getElementById('id01').style.display='block'" style="margin: 0; position: absolute; top: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%); width: 100px; left: 42%;">Login</button>
+        </form>
+        <form action="/signup" method="GET">
+            <button type="submit" onclick="document.getElementById('id02').style.display='block'" style="margin: 0; position: absolute; top: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%); width: 100px; right: 42%;">Sign Up</button>
+        </form>
+    </body>
 </html>

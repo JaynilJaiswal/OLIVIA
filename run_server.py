@@ -1,4 +1,4 @@
-from flask import Flask,render_template,request,redirect,url_for,session,jsonify,send_file
+from flask import Flask,render_template,request,redirect,url_for,session,jsonify,send_file, Blueprint
 # from deepcorrect import DeepCorrect
 import os
 import requests
@@ -9,21 +9,45 @@ from pydub import AudioSegment
 import numpy as np
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
+from flask_login import LoginManager
+from models.user import db, User
+from flask_login import login_required, current_user, login_user, logout_user, login_required
+from werkzeug.security import generate_password_hash, check_password_hash
+# blueprint for auth routes in our app
+from models.auth import auth as auth_blueprint
+
+db.create_all()
+
 geolocator = Nominatim(user_agent="geoapiExercises") 
 
 from features.time import getTime
 from features.date import getDate
 from features.weather import getWeather
 from features.location import getLocation
-STT_href = "http://bbc6fe1894b8.ngrok.io"
-TTS_href = "http://dfa06d3fd032.ngrok.io/"
-NLU_href = "http://81d49507d455.ngrok.io/"
+
+STT_href = "http://eca07b33eac6.ngrok.io/"
+TTS_href = "http://70cbd536d2b0.ngrok.io/"
+NLU_href = "http://17b4732c1481.ngrok.io/"
 
 base_inp_dir = "Audio_input_files/"
 base_out_dir = "Audio_output_files/"
 
 app = Flask(__name__)
-app.secret_key = 'random'
+
+app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlite.db'
+
+app.secret_key = '9OLWxND4o83j4K4iuopO'
+
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.init_app(app)
+
+app.register_blueprint(auth_blueprint)
+
+run_server = Blueprint("run_server",__name__)
+app.register_blueprint(run_server)
+
 
 output_audio_ready = "no"
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
@@ -107,26 +131,50 @@ def backend_pipeline(request,user_data):
 
     output_audio_ready = "yes"
 
+    # code to validate and add user to database goes here
+    # return redirect(url_for('auth.login'))
 
-@app.route('/',methods=['GET','POST'])
+@login_manager.user_loader
+def load_user(user_id):
+    # since the user_id is just the primary key of our user table, use it in the query for the user
+    return db.query(User).get(int(user_id))
+
+@app.route('/',methods=['GET'])
+def index():
+    if request.method=='GET':
+        if current_user.is_authenticated:
+            return redirect(url_for('home'))
+        else:
+            return render_template('index.html')
+         
+
+@app.route('/home',methods=['GET','POST'])
+@login_required
 def home():
     if request.method=='GET':
-        return render_template('index.html')
+        return render_template('home.html',fname=current_user.fname)
     if request.method=="POST":
         user_location =json.loads(request.form['data'])
+        current_user.latitude = user_location["lat"]
+        current_user.longitude = user_location["long"]
+
         tf = TimezoneFinder()
         user_timezone = tf.timezone_at(lng=user_location['long'],lat=user_location['lat'])
+        current_user.timezone = user_timezone
+
         user_address = geolocator.reverse(str(user_location['lat'])+','+str(user_location['long'])).raw['address']
+        current_user.address = user_address
+
         session['user_data']= {'location':user_location,'timezone':user_timezone,'address':user_address}
         print (session['user_data'])
+        
+        db.session.commit()
         return "saved"
 
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='POST':
-
         backend_pipeline(request,session['user_data'])
-        
         return "OK"
 
 @app.route('/check_audio_available', methods=['GET'])
@@ -143,7 +191,6 @@ def fetch_output_audio():
             if os.path.exists(base_out_dir + 'result.wav'):
                 os.remove(base_out_dir + 'result.wav')
             return "output file removed"
-
 
 if __name__ == "__main__":
     app.run(debug=True)
