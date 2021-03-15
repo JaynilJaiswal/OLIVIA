@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <title>OLIVIA</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+    <script type="text/javascript" src="../static/js/recording_emitting.js"></script>
+    <script type="text/javascript" src="../static/js/location_ip_timezone.js"></script>
+    <style>
+        body { background-image: url("../static/images/VA_anim4-0.png"); background-repeat: no-repeat; background-size: 100%; background-position-y: -180px; background-color: rgb(6, 10, 27);}
+        h1 {text-align: center; color:#04d9ff;}
+        p  {text-align: center;}
+        h2 {text-align: center; color: #04d9ff;}
+        ol {text-align: center; color: #04d9ff;}
+        div {
+            position: relative;
+            top: 60px;
+            left: 438px;
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello Mr. {{fname}}!</h1>
+    <div id="mic-box" onclick="ListeningMode()"></div>
+    <audio id="output_voice" style="display:none;" autoplay></audio>
+    <br/><br/>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('auth.logout') }}" style="right:10%;">
+        <h1>Logout</h1>
+    </a>
+    {% endif %}
+</body>
+</html>

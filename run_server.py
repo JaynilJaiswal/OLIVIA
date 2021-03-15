@@ -25,9 +25,9 @@ from features.date import getDate
 from features.weather import getWeather
 from features.location import getLocation
 
-STT_href = "http://eca07b33eac6.ngrok.io/"
-TTS_href = "http://70cbd536d2b0.ngrok.io/"
-NLU_href = "http://17b4732c1481.ngrok.io/"
+STT_href = "http://3d80329a052b.ngrok.io/"
+TTS_href = "http://d958464f99ad.ngrok.io/"
+NLU_href = "http://eb1f4abab983.ngrok.io/"
 
 base_inp_dir = "Audio_input_files/"
 base_out_dir = "Audio_output_files/"
