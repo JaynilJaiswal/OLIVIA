@@ -24,13 +24,19 @@ from features.time import getTime
 from features.date import getDate
 from features.weather import getWeather
 from features.location import getLocation
+from utilities.featureWordExactMatch import exactMatchingWords
+from features.music import getMusicDetails, check_if_already_available, getMusicFile_key
 
-STT_href = "http://3d80329a052b.ngrok.io/"
-TTS_href = "http://d958464f99ad.ngrok.io/"
-NLU_href = "http://eb1f4abab983.ngrok.io/"
+STT_href = "http://37200b901023.ngrok.io/"
+TTS_href = "http://469849ca1e64.ngrok.io/"
+NLU_href = "http://22c8aef93fd5.ngrok.io/"
 
 base_inp_dir = "Audio_input_files/"
 base_out_dir = "Audio_output_files/"
+base_default_dir = "default_messages/"
+base_music_dir = "Music_dir/"
+
+Music_filename = ""
 
 app = Flask(__name__)
 
@@ -50,23 +56,90 @@ app.register_blueprint(run_server)
 
 
 output_audio_ready = "no"
+sel_feature = ""
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 # FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
 
-def select_feature(name,user_data):
+def select_feature(name,user_data,query):
+    global Music_filename
+
     if name=="time":
-        return getTime(user_data["timezone"])
+        return [getTime(user_data["timezone"]),"time"]
+
     if name=='date':
-        return getDate(user_data["timezone"])
+        return [getDate(user_data["timezone"]),"date"]
+
     if name=='weather':
-        return getWeather(user_data['address']['city'])
+        if "city" in user_data['address']:
+            return [getWeather(user_data['address']['city']),"weather"]
+        elif "state_district" in user_data['address']:
+            return [getWeather(user_data['address']['state_district']),"weather"]
+        else:
+            return ["Unable to find location to get weather related information.","weather"]
+
     if name=='location':
-        return getLocation(user_data['address'])
+        return [getLocation(user_data['address']),"location"]
+
+    if name == 'music':
+        song_detail = get_associated_text(query)
+
+        [id_list,name_list,explicit_list] = getMusicDetails(song_detail)
+
+        if id_list == 0: 
+            return ["Music not found, please give a better description.","music"]
+        
+        if explicit_list[0] == "True":
+            return ["Music contains explicit words.","music"]
+            
+        if check_if_already_available(name_list[0]):
+            return ["Streaming "+name_list[0]+" now!",'music']   
+
+        Music_filename = name_list[0]+".m4a" 
+
+        return [getMusicFile_key(id_list[0],name_list[0]),"music"]
+
+    if name =="alarm reminder":
+        return ["Feature to be added soon.","alarm reminder"]
+
+    if name =="schedule":
+        return ["Feature to be added soon.","schedule"]
+
+    if name =="find information":
+        return ["Feature to be added soon.","find information"]
+
+    if name =="message":
+        return ["Feature to be added soon.","message"]
+
+    if name =="email":
+        return ["Feature to be added soon.","email"]
+
+    if name =="call":
+        return ["Feature to be added soon.","call"]
+
+    if name =="features":
+        return ["Feature to be added soon.","features"]
+
+    if name =="translation":
+        return ["Feature to be added soon.","translation"]
+
+
+def get_associated_text(query):
+    if "play" in query:
+        return query.split("play")[1]
+    if "listen to" in query:
+        return query.split("listen to")[1]
+    if "listen" in query:
+        return query.split("listen to")[1]
+    if "lay" in query:
+        return query.split("lay")[1]
+    else:
+        return ""
 
 
 def backend_pipeline(request,user_data):
     
     global output_audio_ready
+    global sel_feature
     
     output_audio_ready = "no"
 
@@ -77,6 +150,7 @@ def backend_pipeline(request,user_data):
     #STT
     payload={'file':open(base_inp_dir + f.filename,'rb')}
     r = requests.post(STT_href,files=payload)
+    print(r)
     input_str=json.loads(r.text)['text'][0]
     print (input_str)
 
@@ -92,6 +166,10 @@ def backend_pipeline(request,user_data):
         text = text.split('oliva')[1].strip()
     if 'holivia' in text:
         text = text.split('holivia')[1].strip()
+    if 'olivi' in text:
+        text = text.split('olivi')[1].strip()
+    if 'olivie' in text:
+        text = text.split('olivie')[1].strip()
 
     input_str = text + "?"
     # NEED to figure out punctuation issue.
@@ -99,23 +177,53 @@ def backend_pipeline(request,user_data):
     print("Preprocessed text: " + input_str)
 
     #NLU
-    r = requests.get(NLU_href,json={"sentence":text}).json()
-    print("Most related feature : "+str(r['Most related feature'][0][0]))
-    print("\n")
-    print("====================================================================")
-    print("=========================Complete result============================")
-    print(str(r['Most related feature']))
-    print("====================================================================")
-    print("====================================================================")
-    print("\n")
-    
-    #Feature
-    input_str = select_feature(r['Most related feature'][0][0],user_data)
+    ## Checking for exact match
+
+    [token,feature_l] = exactMatchingWords(text)
+    if token == "single feature selected":
+        print("====================================================================")
+        print("====================================================================")
+        print("======================Result As per Tagging=========================")
+        print(str(feature_l))
+        print("====================================================================")
+        print("\n")
+        input_str = [select_feature(feature_l[0],user_data,text)]
+
+    elif token == "multiple features selected":
+        # r = requests.get(NLU_href,json={"sentence":text}).json()
+
+        # print("Most related feature : "+str(r['Most related feature'][0][0]))
+        # print("\n")
+        print("====================================================================")
+        print("====================================================================")
+        print("======================Result As per Tagging=========================")
+        print(str(feature_l))
+        print("====================================================================")
+        print("\n")
+        
+        input_str = [select_feature(feature_l[i],user_data,text) for i in range(len(feature_l))]
+        
+    elif token == "no feature tag found":
+        r = requests.get(NLU_href,json={"sentence":text}).json()
+
+        print("Most related feature : "+str(r['Most related feature'][0][0]))
+        print("\n")
+        print("====================================================================")
+        print("======================Result As per NLP-Shell=======================")
+        print(str(r['Most related feature']))
+        print("====================================================================")
+        print("\n")
+        
+        input_str = [select_feature(r['Most related feature'][0][0],user_data,text)]
+
     #TTS        
-    payload={"input_str": input_str }
+    final_input = ""
+    for i in range(len(input_str)):
+        final_input = final_input + input_str[i][0]
+    payload={"input_str": final_input}
     r = requests.get(TTS_href, params=payload).json()
 
-    r = requests.get(TTS_href, params={"input_str":input_str}).json()
+    r = requests.get(TTS_href, params={"input_str":input_str[0]}).json()
     bytes_wav = bytes()
 
     byte_io = io.BytesIO(bytes_wav)
@@ -130,6 +238,10 @@ def backend_pipeline(request,user_data):
         f.write(output_wav)
 
     output_audio_ready = "yes"
+
+    sel_feature = ", ".join([input_str[i][1] for i in range(len(input_str))])
+
+    return "OK"
 
     # code to validate and add user to database goes here
     # return redirect(url_for('auth.login'))
@@ -146,7 +258,6 @@ def index():
             return redirect(url_for('home'))
         else:
             return render_template('index.html')
-         
 
 @app.route('/home',methods=['GET','POST'])
 @login_required
@@ -174,23 +285,38 @@ def home():
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='POST':
-        backend_pipeline(request,session['user_data'])
-        return "OK"
+        return backend_pipeline(request,session['user_data'])
 
 @app.route('/check_audio_available', methods=['GET'])
 def check_audio_available():
     if request.method=="GET":
             return output_audio_ready
 
+# @app.route('/too_long_time_to_process',methods=['POST'])
+# def too_long_time_to_process():
+#     global output_audio_ready
+#     output_audio_ready = "yes"
+#     return send_file(base_default_dir + 'timeout_default_for_'+current_user.gender+'.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='timeout_default_for_'+current_user.gender+'.wav')
+
 @app.route('/fetch_output_audio', methods=['POST','GET'])
 def fetch_output_audio():
         if request.method=="POST":
-            return send_file(base_out_dir + 'result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.wav')
+            return send_file(base_out_dir + 'result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.m4a')
 
         if request.method=="GET":
             if os.path.exists(base_out_dir + 'result.wav'):
                 os.remove(base_out_dir + 'result.wav')
             return "output file removed"
+
+@app.route("/getfeature_name",methods = ['GET'])
+def getfeature_name():
+    return sel_feature
+
+@app.route("/fetch_music_audio",methods = ['GET','POST'])
+def fetch_music_audio():
+    global Music_filename
+    if request.method=="POST" and Music_filename!="":
+        return send_file(Music_filename,mimetype="audio/m4a",as_attachment=True,attachment_filename=Music_filename)
 
 if __name__ == "__main__":
     app.run(debug=True)

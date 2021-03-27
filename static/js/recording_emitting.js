@@ -10,6 +10,8 @@ var duration;                       //output_audio duration
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext //audio context to help us record
 
+feature_just_selected = "";
+
 function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
@@ -62,8 +64,13 @@ function SpeakingMode() {
     };
     xhttp.send();
 
-    reset();
+    var xhtp = new XMLHttpRequest();
+    xhtp.open('GET',"http://127.0.0.1:5000/getfeature_name",false);
+    xhtp.send();
+    feature_just_selected = xhtp.responseText;
 
+    // sleep(output_aud.duration*1000)
+    additional_request(feature_just_selected.split(", "));
     // var xhr = new XMLHttpRequest();
     // xhttp.responseType = 'text';
     // var req = "stay";
@@ -76,6 +83,46 @@ function SpeakingMode() {
 
     // if (req == "output file removed"){reset();}
     
+}
+
+function additional_request(feature_just_selected)
+{
+    for(i=0;i<feature_just_selected.length;i++)
+    {
+        if (feature_just_selected[i] == "music"){
+            
+            // document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
+            console.log("music feature")
+            music_player = document.getElementById('music_player'); 
+    
+            var xhttp = new XMLHttpRequest();
+    
+            xhttp.open('POST', encodeURI('http://127.0.0.1:5000/fetch_music_audio'));
+            xhttp.setRequestHeader('Content-Type', 'application/json');
+            xhttp.responseType = 'blob';
+            xhttp.onload = function(evt) {
+                var blob = new Blob([xhttp.response], {type: 'audio/m4a'});
+                var objectUrl = URL.createObjectURL(blob);
+    
+                music_player.src = objectUrl;
+                music_player.style = "display: inline-block";
+                // Release resource when it's loaded
+                music_player.onload = function(evt) {
+                    URL.revokeObjectURL(objectUrl);     
+                };
+                music_player.load();
+                music_player.play();  
+            };
+            xhttp.send();
+        }
+
+    }
+
+    var xhtp = new XMLHttpRequest();
+    xhtp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
+    xhtp.send();
+    feature_just_selected = xhtp.responseText;
+    reset();
 }
 
 function reset() {
