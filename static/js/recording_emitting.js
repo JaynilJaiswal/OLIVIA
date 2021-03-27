@@ -12,6 +12,40 @@ var audioContext //audio context to help us record
 
 feature_just_selected = "";
 
+window.onload = function(){
+
+    welcomeMessage = document.getElementById('default-messages'); 
+    
+    var xhttp = new XMLHttpRequest();
+    
+    xhttp.open('POST', encodeURI('http://127.0.0.1:5000/getWelcomeMessage'));
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    xhttp.responseType = 'blob';
+    xhttp.onload = function(evt) {
+        var blob = new Blob([xhttp.response], {type: 'audio/wav'});
+        var objectUrl = URL.createObjectURL(blob);
+    
+        welcomeMessage.src = objectUrl;
+        // Release resource when it's loaded
+        welcomeMessage.onload = function(evt) {
+            URL.revokeObjectURL(objectUrl);     
+        };
+        welcomeMessage.load();
+        welcomeMessage.play();  
+    };
+    xhttp.send();
+}
+
+var music_modal = document.getElementById('music-modal');
+      
+// When the user clicks anywhere outside of the modal, close it
+function cancelMusicModal(event) {
+    if (event.target == music_modal) {
+        music_modal.pause();
+        music_modal.style.display = "none";
+    }
+}
+
 function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
@@ -69,8 +103,7 @@ function SpeakingMode() {
     xhtp.send();
     feature_just_selected = xhtp.responseText;
 
-    // sleep(output_aud.duration*1000)
-    additional_request(feature_just_selected.split(", "));
+    additional_request(feature_just_selected.split(", "),output_aud.duration);
     // var xhr = new XMLHttpRequest();
     // xhttp.responseType = 'text';
     // var req = "stay";
@@ -85,16 +118,33 @@ function SpeakingMode() {
     
 }
 
-function additional_request(feature_just_selected)
+function additional_request(feature_just_selected,duration_sleep)
 {
+    // sleep(duration_sleep*1000)
+
     for(i=0;i<feature_just_selected.length;i++)
     {
         if (feature_just_selected[i] == "music"){
             
             // document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
-            console.log("music feature")
+            console.log("music feature");
+
+            //fetching music name and thumbnail url
+            var xhtp = new XMLHttpRequest();
+            xhtp.open('GET',"http://127.0.0.1:5000/getMusicDetails_toShow",false);
+            xhtp.send();
+            name_url = xhtp.responseText;
+
+            music_name = document.getElementById("music-album-name");
+            music_name.innerHTML = name_url.split("###--###")[0];
+            console.log("music name set")
+            music_image = document.getElementById("thumbnail-image");
+            console.log("thumbnail_fetched!")
+            music_image.src = name_url.split("###--###")[1];
+            
             music_player = document.getElementById('music_player'); 
     
+            // fetching audio api
             var xhttp = new XMLHttpRequest();
     
             xhttp.open('POST', encodeURI('http://127.0.0.1:5000/fetch_music_audio'));
@@ -105,7 +155,7 @@ function additional_request(feature_just_selected)
                 var objectUrl = URL.createObjectURL(blob);
     
                 music_player.src = objectUrl;
-                music_player.style = "display: inline-block";
+                // music_player.style = "display: inline-block";
                 // Release resource when it's loaded
                 music_player.onload = function(evt) {
                     URL.revokeObjectURL(objectUrl);     
@@ -114,8 +164,10 @@ function additional_request(feature_just_selected)
                 music_player.play();  
             };
             xhttp.send();
-        }
 
+            //display modal
+            music_modal.style.display = "block;";
+        }
     }
 
     var xhtp = new XMLHttpRequest();

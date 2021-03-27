@@ -27,9 +27,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, check_if_already_available, getMusicFile_key
 
-STT_href = "http://37200b901023.ngrok.io/"
-TTS_href = "http://469849ca1e64.ngrok.io/"
-NLU_href = "http://22c8aef93fd5.ngrok.io/"
+STT_href = "http://34ae48447ded.ngrok.io/"
+TTS_href = "http://17cdc6ac68a9.ngrok.io/"
+NLU_href = "http://9e042c13ad5c.ngrok.io/"
 
 base_inp_dir = "Audio_input_files/"
 base_out_dir = "Audio_output_files/"
@@ -57,11 +57,13 @@ app.register_blueprint(run_server)
 
 output_audio_ready = "no"
 sel_feature = ""
+music_thumbnail_url = ""
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 # FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
 
 def select_feature(name,user_data,query):
     global Music_filename
+    global music_thumbnail_url
 
     if name=="time":
         return [getTime(user_data["timezone"]),"time"]
@@ -83,7 +85,8 @@ def select_feature(name,user_data,query):
     if name == 'music':
         song_detail = get_associated_text(query)
 
-        [id_list,name_list,explicit_list] = getMusicDetails(song_detail)
+        [id_list,name_list,explicit_list,url] = getMusicDetails(song_detail)
+        music_thumbnail_url = url
 
         if id_list == 0: 
             return ["Music not found, please give a better description.","music"]
@@ -301,7 +304,7 @@ def check_audio_available():
 @app.route('/fetch_output_audio', methods=['POST','GET'])
 def fetch_output_audio():
         if request.method=="POST":
-            return send_file(base_out_dir + 'result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.m4a')
+            return send_file(base_out_dir + 'result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.wav')
 
         if request.method=="GET":
             if os.path.exists(base_out_dir + 'result.wav'):
@@ -318,5 +321,17 @@ def fetch_music_audio():
     if request.method=="POST" and Music_filename!="":
         return send_file(Music_filename,mimetype="audio/m4a",as_attachment=True,attachment_filename=Music_filename)
 
+@app.route("/getWelcomeMessage",methods = ['GET','POST'])
+def getWelcomeMessage():
+    if request.method=="POST":
+        file_path = "default_messages/welcome_message_"+str(current_user.gender)+".wav"
+        return  send_file(file_path,mimetype="audio/wav",as_attachment=True)
+
+@app.route("/getMusicDetails_toShow",methods=["GET"])
+def getMusicDetails_toShow():
+    if request.method=="GET":
+        return Music_filename+"###--###"+music_thumbnail_url
+
 if __name__ == "__main__":
     app.run(debug=True)
+

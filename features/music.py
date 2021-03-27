@@ -10,17 +10,18 @@ api = ytm.YouTubeMusic()
 def getMusicDetails(search_text):
 
     if search_text =="":
-        return [0,0,0]
+        return [0,0,0,0]
 
     songs = api.search_songs(search_text)
     id = [k['id'] for k in songs['items']]
     song_name = [k['name'] for k in songs['items']]
     explicit = [k['explicit'] for k in songs['items']]
+    url = [k['thumbnail']['url'] for k in songs['items']]
 
     if (id[0] == None):
-        return [0,0,0]
+        return [0,0,0,0]
 
-    return [id,song_name,explicit]
+    return [id,song_name,explicit,url]
 
 def check_if_already_available(name):
     if path.exists(str(name)+".m4a"):
