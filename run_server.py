@@ -15,6 +15,8 @@ from flask_login import login_required, current_user, login_user, logout_user, l
 from werkzeug.security import generate_password_hash, check_password_hash
 # blueprint for auth routes in our app
 from models.auth import auth as auth_blueprint
+import shutil
+from os import path
 
 db.create_all()
 
@@ -25,16 +27,17 @@ from features.date import getDate
 from features.weather import getWeather
 from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
-from features.music import getMusicDetails, check_if_already_available, getMusicFile_key
+from features.music import getMusicDetails, getMusicFile_key
 
 STT_href = "http://9c8565dee6b7.ngrok.io/"
 TTS_href = "http://3598d23dec7c.ngrok.io/"
 NLU_href = "http://0c4f74dec17e.ngrok.io/"
 
-base_inp_dir = "Audio_input_files/"
-base_out_dir = "Audio_output_files/"
+base_inp_dir = "filesystem_for_data/Audio_input_files/"
+base_out_dir = "filesystem_for_data/Audio_output_files/"
+base_music_dir = "filesystem_for_data/Music_dir/"
+
 base_default_dir = "default_messages/"
-base_music_dir = "Music_dir/"
 
 Music_filename = ""
 
@@ -65,6 +68,9 @@ def select_feature(name,user_data,query):
     global Music_filename
     global music_thumbnail_url
 
+    Music_filename = ""
+    music_thumbnail_url = ""
+
     if name=="time":
         return [getTime(user_data["timezone"]),"time"]
 
@@ -94,12 +100,13 @@ def select_feature(name,user_data,query):
         if explicit_list[0] == "True":
             return ["Music contains explicit words.","music"]
             
-        if check_if_already_available(name_list[0]):
+        if path.exists(base_music_dir+ name_list[0] +".m4a"):
+            Music_filename = name_list[0]+".m4a" 
             return ["Streaming "+name_list[0]+" now!",'music']   
 
-        Music_filename = name_list[0]+".m4a" 
-
-        return [getMusicFile_key(id_list[0],name_list[0]),"music"]
+        music_stream = getMusicFile_key(id_list[0],name_list[0])
+        shutil.move(Music_filename, base_music_dir + Music_filename)
+        return [music_stream,"music"]
 
 
     if name =="email":
@@ -149,11 +156,11 @@ def backend_pipeline(request,user_data):
     output_audio_ready = "no"
 
     f  = request.files['audio_data']
-    with open(base_inp_dir + f.filename,'wb') as audio:
+    with open(base_inp_dir+ current_user.uname + "/" + f.filename,'wb') as audio:
         f.save(audio)
         
     #STT
-    payload={'file':open(base_inp_dir + f.filename,'rb')}
+    payload={'file':open(base_inp_dir+ current_user.uname + "/" + f.filename,'rb')}
     r = requests.post(STT_href,files=payload)
     print(r)
     input_str=json.loads(r.text)['text'][0]
@@ -219,7 +226,7 @@ def backend_pipeline(request,user_data):
         
         input_str = [select_feature(r['Most related feature'][0][0],user_data,text)]
 
-    new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir + f.filename, command_feature_selected=input_str[0][1], command_output_text = input_str[0][0])
+    new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + f.filename, command_feature_selected=input_str[0][1], command_output_text = input_str[0][0])
     db.add(new_user_ch)
     db.commit()
 
@@ -238,10 +245,10 @@ def backend_pipeline(request,user_data):
     
     output_wav = byte_io.read() 
     
-    if os.path.exists(base_out_dir + 'result.wav'):
-        os.remove(base_out_dir + 'result.wav')
+    if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
+        os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
         
-    with open(base_out_dir + 'result.wav','bx') as f:
+    with open(base_out_dir+ current_user.uname + "/" + 'result.wav','bx') as f:
         f.write(output_wav)
 
     output_audio_ready = "yes"
@@ -303,11 +310,11 @@ def check_audio_available():
 @app.route('/fetch_output_audio', methods=['POST','GET'])
 def fetch_output_audio():
         if request.method=="POST":
-            return send_file(base_out_dir + 'result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.wav')
+            return send_file(base_out_dir+ current_user.uname + "/" + 'result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.wav')
 
         if request.method=="GET":
-            if os.path.exists(base_out_dir + 'result.wav'):
-                os.remove(base_out_dir + 'result.wav')
+            if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
+                os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
             return "output file removed"
 
 @app.route("/getfeature_name",methods = ['GET'])
@@ -318,7 +325,7 @@ def getfeature_name():
 def fetch_music_audio():
     global Music_filename
     if request.method=="POST" and Music_filename!="":
-        return send_file(Music_filename,mimetype="audio/m4a",as_attachment=True,attachment_filename=Music_filename)
+        return send_file(base_music_dir + Music_filename,mimetype="audio/m4a",as_attachment=True,attachment_filename=Music_filename)
 
 @app.route("/getWelcomeMessage",methods = ['GET','POST'])
 def getWelcomeMessage():

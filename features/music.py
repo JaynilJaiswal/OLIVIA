@@ -1,8 +1,5 @@
 from youtube_dl import YoutubeDL
 import ytm
-import os.path
-from os import path
-import shutil
 
 api = ytm.YouTubeMusic()
 
@@ -23,17 +20,11 @@ def getMusicDetails(search_text):
 
     return [id,song_name,explicit,url]
 
-def check_if_already_available(name):
-    if path.exists(str(name)+".m4a"):
-        return True
-    return False
-
 def getMusicFile_key(youtube_id,name):
     print(name)
     filename = str(name)+".m4a"
     audio_downloader = YoutubeDL({'format': 'bestaudio/best', 'outtmpl': filename})
     audio_downloader.extract_info("https://www.youtube.com/watch?v="+str(youtube_id))
-    # shutil.move("../"+filename,"../Music_dir/"+filename)
     return "Streaming "+ name+" now!"
 
 

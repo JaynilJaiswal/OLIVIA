@@ -20,6 +20,7 @@ class User_location(UserMixin,db.Model):
     __tablename__ = 'user_location'
     id = db.Column(db.Integer, primary_key=True) 
     user_base_id = db.Column(db.Integer, db.ForeignKey('user_base.id')) 
+    checkin_time = db.Column('dateTime_created', db.DateTime, nullable=False, default=datetime.datetime.utcnow)   
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     timezone = db.Column(db.String(100))
