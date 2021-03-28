@@ -23,20 +23,11 @@
             height: 400px;
         }
 
-        /* Center the image and position the close button */
-        .imgcontainer {
-        text-align: center;
-        margin: 24px 0 12px 0;
-        position: relative;
-        }
-
         img.avatar {
-        width: 40%;
-        border-radius: 50%;
-        }
-
-        .container {
-        padding: 16px;
+        width: 50%;
+        border-radius: 5%;
+        align-items: center;
+        margin: 24px 0 12px 0;
         }
 
         span.psw {
@@ -61,10 +52,11 @@
 
         /* Modal Content/Box */
         .modal-content {
-        background-color: #fefefe;
+        background-color: #14bd98;
         margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
-        border: 1px solid #888;
-        width: 80%; /* Could be more or less, depending on screen size */
+        border-radius: 5%;
+        width: 50%; /* Could be more or less, depending on screen size */
+        height: 100%;
         }
 
         /* The Close Button (x) */
@@ -123,17 +115,12 @@
     </a>
     {% endif %}
     <div id="music-modal" class="modal">
-        <form class="modal-content animate" action="/action_page.php" method="post">
-          <br/>&nbsp;&nbsp;<img src="../static/images/back_ar.png" onclick="cancelMusicModal()" height=35px width=35px>
-          <div class="imgcontainer">
-            <span onclick="document.getElementById('music-modal').style.display='none'" class="close" title="Close Modal">&times;</span>
-            <img id="thumbnail-image" src="test.png" alt="Avatar" class="avatar">
-          </div>
-          <div class="container">
-            <h3 id="music-album-name"></h3>
-            <audio id="music_player" style = "display: inline-block; width:100px;" controls autoplay></audio>
-          </div>
-        </form>
+        <div class="modal-content animate">
+            <span onclick="document.getElementById('music-modal').style.display = 'none';document.getElementById('music-player').pause();" class="close" title="Close Modal">&times;</span><br/><br/><br/><br/>
+            <img id="thumbnail-image" src="test.png" alt="Music Label Image" class="avatar"> 
+            <h3 id="music-album-name" style="text-align:center;font: size 18px;"></h3><br/>
+            <audio id="music-player" style = "display: inline-block; width:300px; align-items: center; margin: 24px 0 12px 0;" controls autoplay></audio>
+        </div>
     </div>
 </body>
 </html>

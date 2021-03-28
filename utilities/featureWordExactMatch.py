@@ -1,38 +1,41 @@
 feature_db = {
         "time":["time"],
 
-		"date":["date"],
+        "date":["date"],
 
-		"location":["location"],
+        "location":["location"],
 
-		"weather":["weather","climate","sunny","rain","wind"],
+        "weather":["weather","climate","sunny","rain","wind"],
 
-		"alarm reminder":["alarm","remember","reminder"],
+        "alarm reminder":["alarm","remember","reminder"],
 
-		"schedule" :["schedule","plan","timetable"],
+        "schedule" :["schedule","plan","timetable"],
 
-		"music":["music","play"],
+        "music":["music","play","lay"],
 
-		"find information": ["info","find"],
+        "find information": ["info","find"],
 
-		"message":["message","chat","whatsapp"],
-		
-		"email":["email","mail","gmail"],
+        "message":["message","chat","whatsapp"],
+        
+        "email":["email","mail","gmail"],
 
-		"call":["call","phone call"],
-		
-		"features":["feature list","utilities"],
+        "call":["call","phone call"],
+        
+        "features":["feature list","utilities"],
 
-		"translation":["translat"]
+        "translation":["translat"]
 }
 
 
 def exactMatchingWords(text):
     feature_selected = []
     global feature_db
-    for item in feature_db.items():
-        if any(it in text for it in item[1]):
-            feature_selected.append(item[0])
+    
+    for k in text.split(" "):
+        for item in feature_db.items():
+            if any(it == k for it in item[1]):
+                feature_selected.append(item[0])
+
     if len(feature_selected)==0:
         return ["no feature tag found",[]]
     elif len(feature_selected)>1:

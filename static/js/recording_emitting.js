@@ -36,15 +36,6 @@ window.onload = function(){
     xhttp.send();
 }
 
-var music_modal = document.getElementById('music-modal');
-      
-// When the user clicks anywhere outside of the modal, close it
-function cancelMusicModal(event) {
-    if (event.target == music_modal) {
-        music_modal.pause();
-        music_modal.style.display = "none";
-    }
-}
 
 function ListeningMode() {
     document.getElementById("mic-box").style.pointerEvents = "none";
@@ -125,7 +116,8 @@ function additional_request(feature_just_selected,duration_sleep)
     for(i=0;i<feature_just_selected.length;i++)
     {
         if (feature_just_selected[i] == "music"){
-            
+
+            document.getElementById('music-modal').style.display = "block";
             // document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
             console.log("music feature");
 
@@ -136,13 +128,13 @@ function additional_request(feature_just_selected,duration_sleep)
             name_url = xhtp.responseText;
 
             music_name = document.getElementById("music-album-name");
-            music_name.innerHTML = name_url.split("###--###")[0];
+            music_name.innerHTML = name_url.split("###--###")[0].slice(0, -4);
             console.log("music name set")
             music_image = document.getElementById("thumbnail-image");
             console.log("thumbnail_fetched!")
             music_image.src = name_url.split("###--###")[1];
             
-            music_player = document.getElementById('music_player'); 
+            music_player = document.getElementById('music-player'); 
     
             // fetching audio api
             var xhttp = new XMLHttpRequest();
@@ -166,7 +158,6 @@ function additional_request(feature_just_selected,duration_sleep)
             xhttp.send();
 
             //display modal
-            music_modal.style.display = "block;";
         }
     }
 

@@ -27,9 +27,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, check_if_already_available, getMusicFile_key
 
-STT_href = "http://34ae48447ded.ngrok.io/"
-TTS_href = "http://17cdc6ac68a9.ngrok.io/"
-NLU_href = "http://9e042c13ad5c.ngrok.io/"
+STT_href = "http://6a600766aeea.ngrok.io/"
+TTS_href = "http://8fd41feaec77.ngrok.io/"
+NLU_href = "http://ffe831ecd928.ngrok.io/"
 
 base_inp_dir = "Audio_input_files/"
 base_out_dir = "Audio_output_files/"
@@ -86,7 +86,7 @@ def select_feature(name,user_data,query):
         song_detail = get_associated_text(query)
 
         [id_list,name_list,explicit_list,url] = getMusicDetails(song_detail)
-        music_thumbnail_url = url
+        music_thumbnail_url = url[0]
 
         if id_list == 0: 
             return ["Music not found, please give a better description.","music"]
