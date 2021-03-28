@@ -10,7 +10,7 @@ import numpy as np
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 from flask_login import LoginManager
-from models.user import db, User
+from models.user import db, User,User_location ,User_command_history
 from flask_login import login_required, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 # blueprint for auth routes in our app
@@ -27,9 +27,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, check_if_already_available, getMusicFile_key
 
-STT_href = "http://6a600766aeea.ngrok.io/"
-TTS_href = "http://8fd41feaec77.ngrok.io/"
-NLU_href = "http://ffe831ecd928.ngrok.io/"
+STT_href = "http://9c8565dee6b7.ngrok.io/"
+TTS_href = "http://3598d23dec7c.ngrok.io/"
+NLU_href = "http://0c4f74dec17e.ngrok.io/"
 
 base_inp_dir = "Audio_input_files/"
 base_out_dir = "Audio_output_files/"
@@ -101,6 +101,11 @@ def select_feature(name,user_data,query):
 
         return [getMusicFile_key(id_list[0],name_list[0]),"music"]
 
+
+    if name =="email":
+
+        return ["Feature to be added soon.","email"]
+
     if name =="alarm reminder":
         return ["Feature to be added soon.","alarm reminder"]
 
@@ -112,9 +117,6 @@ def select_feature(name,user_data,query):
 
     if name =="message":
         return ["Feature to be added soon.","message"]
-
-    if name =="email":
-        return ["Feature to be added soon.","email"]
 
     if name =="call":
         return ["Feature to be added soon.","call"]
@@ -157,6 +159,8 @@ def backend_pipeline(request,user_data):
     input_str=json.loads(r.text)['text'][0]
     print (input_str)
 
+    db_com_str = input_str
+
     #preprocess   
     text = input_str    
     if 'olivia' in text:
@@ -193,10 +197,6 @@ def backend_pipeline(request,user_data):
         input_str = [select_feature(feature_l[0],user_data,text)]
 
     elif token == "multiple features selected":
-        # r = requests.get(NLU_href,json={"sentence":text}).json()
-
-        # print("Most related feature : "+str(r['Most related feature'][0][0]))
-        # print("\n")
         print("====================================================================")
         print("====================================================================")
         print("======================Result As per Tagging=========================")
@@ -218,6 +218,10 @@ def backend_pipeline(request,user_data):
         print("\n")
         
         input_str = [select_feature(r['Most related feature'][0][0],user_data,text)]
+
+    new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir + f.filename, command_feature_selected=input_str[0][1], command_output_text = input_str[0][0])
+    db.add(new_user_ch)
+    db.commit()
 
     #TTS        
     final_input = ""
@@ -269,19 +273,20 @@ def home():
         return render_template('home.html',fname=current_user.fname)
     if request.method=="POST":
         user_location =json.loads(request.form['data'])
-        current_user.latitude = user_location["lat"]
-        current_user.longitude = user_location["long"]
 
         tf = TimezoneFinder()
         user_timezone = tf.timezone_at(lng=user_location['long'],lat=user_location['lat'])
-        current_user.timezone = user_timezone
 
         user_address = geolocator.reverse(str(user_location['lat'])+','+str(user_location['long'])).raw['address']
-        current_user.address = user_address
 
+        new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = user_address['city'], state_district = user_address['state_district'], state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+        
         session['user_data']= {'location':user_location,'timezone':user_timezone,'address':user_address}
         print (session['user_data'])
         
+        db.add(new_user_location)
+        db.commit()    
+
         db.session.commit()
         return "saved"
 
@@ -294,12 +299,6 @@ def process():
 def check_audio_available():
     if request.method=="GET":
             return output_audio_ready
-
-# @app.route('/too_long_time_to_process',methods=['POST'])
-# def too_long_time_to_process():
-#     global output_audio_ready
-#     output_audio_ready = "yes"
-#     return send_file(base_default_dir + 'timeout_default_for_'+current_user.gender+'.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='timeout_default_for_'+current_user.gender+'.wav')
 
 @app.route('/fetch_output_audio', methods=['POST','GET'])
 def fetch_output_audio():

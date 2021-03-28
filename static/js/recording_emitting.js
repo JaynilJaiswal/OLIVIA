@@ -130,6 +130,7 @@ function additional_request(feature_just_selected,duration_sleep)
             music_name = document.getElementById("music-album-name");
             music_name.innerHTML = name_url.split("###--###")[0].slice(0, -4);
             console.log("music name set")
+            
             music_image = document.getElementById("thumbnail-image");
             console.log("thumbnail_fetched!")
             music_image.src = name_url.split("###--###")[1];

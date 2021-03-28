@@ -1,7 +1,7 @@
 feature_db = {
         "time":["time"],
 
-        "date":["date"],
+        "date":["date","day"],
 
         "location":["location"],
 
@@ -15,7 +15,7 @@ feature_db = {
 
         "find information": ["info","find"],
 
-        "message":["message","chat","whatsapp"],
+        "message":["message","chat","whatsapp","ping"],
         
         "email":["email","mail","gmail"],
 
