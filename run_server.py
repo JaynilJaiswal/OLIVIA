@@ -29,9 +29,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 
-STT_href = "http://9c8565dee6b7.ngrok.io/"
-TTS_href = "http://3598d23dec7c.ngrok.io/"
-NLU_href = "http://0c4f74dec17e.ngrok.io/"
+STT_href = "http://e7a1a89bfeda.ngrok.io/"
+TTS_href = "http://150a5fdc9f20.ngrok.io/"
+NLU_href = "http://faaa93427dd9.ngrok.io/"
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
 base_out_dir = "filesystem_for_data/Audio_output_files/"
@@ -104,6 +104,7 @@ def select_feature(name,user_data,query):
             Music_filename = name_list[0]+".m4a" 
             return ["Streaming "+name_list[0]+" now!",'music']   
 
+        Music_filename = name_list[0]+".m4a" 
         music_stream = getMusicFile_key(id_list[0],name_list[0])
         shutil.move(Music_filename, base_music_dir + Music_filename)
         return [music_stream,"music"]

@@ -10,7 +10,7 @@ auth = Blueprint('auth', __name__)
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
 base_out_dir = "filesystem_for_data/Audio_output_files/"
-base_music_dir = "filesystem_for_data/Music_dir/"
+base_gmail_cred_dir = "filesystem_for_data/gmail_cred/"
 
 @auth.route('/login', methods=['GET'])
 def login():
@@ -106,6 +106,8 @@ def signup_post():
         os.mkdir(base_inp_dir+uname)
     if not os.path.exists(base_out_dir+uname):
         os.mkdir(base_out_dir+uname)
+    if not os.path.exists(base_gmail_cred_dir+uname):
+        os.mkdir(base_gmail_cred_dir+uname)
 
 
     flash('Your account has been registered successfully!')
