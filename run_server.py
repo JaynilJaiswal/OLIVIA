@@ -5,20 +5,23 @@ import requests
 from scipy.io.wavfile import read,write
 import io
 import json
-from pydub import AudioSegment
+
 import numpy as np
 import librosa
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="geoapiExercises") 
 
+from Models.generic_sound_classifier.audio_detect import *
+
 from features.time import getTime
 from features.date import getDate
 from features.weather import getWeather
 from features.location import getLocation
-STT_href = "http://76dd5970815d.ngrok.io/"
-TTS_href = "http://6803a4470549.ngrok.io/"
-NLU_href = "http://3f58131147b6.ngrok.io/"
+STT_href = "http://a925e532ca56.ngrok.io/"
+TTS_href = "http://6adef9c89477.ngrok.io/"
+NLU_href = "http://3620f9d95c56.ngrok.io/"
+audio_classifier = AudioClassifier()
 preprocess_href = "http://127.0.0.1:5040/"
 
 base_inp_dir = "Audio_input_files/"
@@ -27,8 +30,6 @@ base_out_dir = "Audio_output_files/"
 app = Flask(__name__)
 app.secret_key = 'random'
 data=[]
-sr=0
-output_audio_ready = "no"
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 # FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
 
@@ -43,18 +44,10 @@ def select_feature(name,user_data):
         return getLocation(user_data['address'])
 
 
-def backend_pipeline(request,user_data):
+def backend_pipeline(filename,user_data):
     
-    global output_audio_ready
-    
-    output_audio_ready = "no"
-
-    f  = request.files['audio_data']
-    with open(base_inp_dir + f.filename,'wb') as audio:
-        f.save(audio)
-        
     #STT
-    payload={'file':open(base_inp_dir + f.filename,'rb')}
+    payload={'file':open(base_inp_dir + filename,'rb')}
     r = requests.post(STT_href,files=payload)
     input_str=json.loads(r.text)['text'][0]
     print (input_str)
@@ -94,7 +87,6 @@ def backend_pipeline(request,user_data):
     payload={"input_str": input_str }
     r = requests.get(TTS_href, params=payload).json()
 
-    r = requests.get(TTS_href, params={"input_str":input_str}).json()
     bytes_wav = bytes()
 
     byte_io = io.BytesIO(bytes_wav)
@@ -108,7 +100,6 @@ def backend_pipeline(request,user_data):
     with open(base_out_dir + 'result.wav','bx') as f:
         f.write(output_wav)
 
-    output_audio_ready = "yes"
 
 
 @app.route('/',methods=['GET','POST'])
@@ -121,25 +112,43 @@ def home():
         user_timezone = tf.timezone_at(lng=user_location['long'],lat=user_location['lat'])
         user_address = geolocator.reverse(str(user_location['lat'])+','+str(user_location['long'])).raw['address']
         session['user_data']= {'location':user_location,'timezone':user_timezone,'address':user_address}
+        session['command_in_progress']=False
         print (session['user_data'])
         return "saved"
 
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='POST':
-        global data,sr,output_audio_ready
-        temp,sr=librosa.load(request.files['audio_data'])
-        data=np.append(data,temp)
-        librosa.output.write_wav(base_out_dir+'result.wav',data,sr)
-        output_audio_ready="yes"
-        # backend_pipeline(request,session['user_data'])
-        
-        return "OK"
+        global data
+        filename = request.files['audio_data'].filename
+        audio,sr = librosa.load(request.files['audio_data'])
+        labels = audio_classifier.detect(audio)
+        if labels[0]=="Finger snapping":
+            session['command_in_progress'] = True
+            print(session['command_in_progress'])
+            return {"continue":"YES"}
+        else:
+            if session['command_in_progress']:
+                if labels[0]=='Speech':
+                    data = np.append(data,audio)
+                    print(session['command_in_progress'])
+                    return {"continue":"YES"}
+                else:
+                    librosa.output.write_wav(base_inp_dir + filename,data,sr)
+                    data=[]
+                    session['command_in_progress'] = False
+                    print(session['command_in_progress'])
+                    backend_pipeline(filename,session['user_data'])
+                    return {"continue":"NO"}
+            else:
+                print(session['command_in_progress'])
+                return {"continue":"YES"}
 
-@app.route('/check_audio_available', methods=['GET'])
-def check_audio_available():
-    if request.method=="GET":
-            return output_audio_ready
+
+# @app.route('/check_audio_available', methods=['GET'])
+# def check_audio_available():
+#     if request.method=="GET":
+#             return output_audio_ready
 
 @app.route('/fetch_output_audio', methods=['POST','GET'])
 def fetch_output_audio():

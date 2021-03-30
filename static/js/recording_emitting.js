@@ -11,22 +11,21 @@ var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext //audio context to help us record
 
 function ListeningMode() {
-    document.getElementById("mic-box").style.pointerEvents = "none";
-    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
-    recordMode(5);
+    
+    recordMode();
 }
 
 function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
-    var xhttp = new XMLHttpRequest();
-    var req = "no";
-    // xhttp.open('GET',"http://127.0.0.1:5000/check",false);
-    do{
-        sleep(1000);
-        xhttp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
-        xhttp.send();
-        req = xhttp.responseText;
-    }while(req=="no");
+    // var xhttp = new XMLHttpRequest();
+    // var req = "no";
+    // // xhttp.open('GET',"http://127.0.0.1:5000/check",false);
+    // do{
+    //     sleep(1000);
+    //     xhttp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
+    //     xhttp.send();
+    //     req = xhttp.responseText;
+    // }while(req=="no");
     console.log("Speaking mode");
     SpeakingMode();
 }
@@ -57,12 +56,16 @@ function SpeakingMode() {
         output_aud.onload = function(evt) {
             URL.revokeObjectURL(objectUrl);     
         };
+        output_aud.onended = function(){
+            reset();
+            recordMode();
+        };
         output_aud.load();
         output_aud.play();  
     };
     xhttp.send();
 
-    reset();
+    // reset();
 
     // var xhr = new XMLHttpRequest();
     // xhttp.responseType = 'text';
@@ -81,10 +84,12 @@ function SpeakingMode() {
 function reset() {
     document.getElementById("mic-box").style.pointerEvents = "auto";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
+
 }
 
-function recordMode(times) {
-
+function recordMode() {
+    document.getElementById("mic-box").style.pointerEvents = "none";
+    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     var constraints = { audio: true, video: false }
 
     navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
@@ -111,9 +116,10 @@ function recordMode(times) {
             rec.exportWAV(uploadWAVFile);
 
             console.log("Recording done");
-            if (times>1){
-                recordMode(times-1);
-            }
+            // if (times>1){
+            //     // console.log(cont);
+            //     recordMode(times-1);
+            // }
         }, 3000);
     }).catch((error) => {
       this.setState({
@@ -136,6 +142,17 @@ function uploadWAVFile(blob) {
     var xhr = new XMLHttpRequest();
     var fd = new FormData();
     fd.append("audio_data", blob, filename + '.wav');
+    xhr.onreadystatechange = function() {
+        if (this.readyState==4){
+            // console.log(times);
+            if (JSON.parse(xhr.responseText)["continue"]=="YES"){
+                recordMode();
+            }
+            else{
+                ProcessMode();
+            }
+        }
+    };
     xhr.open("POST", "http://127.0.0.1:5000/process", true);
 
     xhr.send(fd);
