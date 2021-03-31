@@ -32,9 +32,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 
-STT_href = "http://5c6c8a2c0bb9.ngrok.io/"
-TTS_href = "http://383a9b80bc5e.ngrok.io/"
-NLU_href = "http://f3b6b50ac1a6.ngrok.io/"
+STT_href = "http://584dc438ef26.ngrok.io/"
+TTS_href = "http://299e3cc61060.ngrok.io/"
+NLU_href = "http://3795f4bb3c60.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -228,7 +228,7 @@ def backend_pipeline(filename,user_data):
         
         input_str = [select_feature(r['Most related feature'][0][0],user_data,text)]
 
-    new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + f.filename, command_feature_selected=input_str[0][1], command_output_text = input_str[0][0])
+    new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + filename, command_feature_selected=input_str[0][1], command_output_text = input_str[0][0])
     db.add(new_user_ch)
     db.commit()
 
