@@ -1,12 +1,13 @@
 from flask import Flask,render_template,request,redirect,url_for,session,jsonify,send_file, Blueprint
-# from deepcorrect import DeepCorrect
+
 import os
 import requests
 from scipy.io.wavfile import read,write
 import io
 import json
-from pydub import AudioSegment
+
 import numpy as np
+import librosa
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 from flask_login import LoginManager
@@ -22,6 +23,8 @@ db.create_all()
 
 geolocator = Nominatim(user_agent="geoapiExercises") 
 
+from Models.generic_sound_classifier.audio_detect import *
+
 from features.time import getTime
 from features.date import getDate
 from features.weather import getWeather
@@ -29,9 +32,10 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 
-STT_href = "http://e7a1a89bfeda.ngrok.io/"
-TTS_href = "http://150a5fdc9f20.ngrok.io/"
-NLU_href = "http://faaa93427dd9.ngrok.io/"
+STT_href = "http://5c6c8a2c0bb9.ngrok.io/"
+TTS_href = "http://383a9b80bc5e.ngrok.io/"
+NLU_href = "http://f3b6b50ac1a6.ngrok.io/"
+audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
 base_out_dir = "filesystem_for_data/Audio_output_files/"
@@ -39,7 +43,6 @@ base_music_dir = "filesystem_for_data/Music_dir/"
 
 base_default_dir = "default_messages/"
 
-Music_filename = ""
 
 app = Flask(__name__)
 
@@ -47,7 +50,7 @@ app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlite.db'
 
 app.secret_key = '9OLWxND4o83j4K4iuopO'
-
+data=[]
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
@@ -58,18 +61,16 @@ run_server = Blueprint("run_server",__name__)
 app.register_blueprint(run_server)
 
 
-output_audio_ready = "no"
-sel_feature = ""
-music_thumbnail_url = ""
+# output_audio_ready = "no"
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 # FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
 
 def select_feature(name,user_data,query):
-    global Music_filename
-    global music_thumbnail_url
+    # global Music_filename
+    # global music_thumbnail_url
 
-    Music_filename = ""
-    music_thumbnail_url = ""
+    session['Music_filename'] = ""
+    session['music_thumbnail_url'] = ""
 
     if name=="time":
         return [getTime(user_data["timezone"]),"time"]
@@ -92,7 +93,7 @@ def select_feature(name,user_data,query):
         song_detail = get_associated_text(query)
 
         [id_list,name_list,explicit_list,url] = getMusicDetails(song_detail)
-        music_thumbnail_url = url[0]
+        session['music_thumbnail_url'] = url[0]
 
         if id_list == 0: 
             return ["Music not found, please give a better description.","music"]
@@ -101,12 +102,12 @@ def select_feature(name,user_data,query):
             return ["Music contains explicit words.","music"]
             
         if path.exists(base_music_dir+ name_list[0] +".m4a"):
-            Music_filename = name_list[0]+".m4a" 
+            session['Music_filename'] = name_list[0]+".m4a" 
             return ["Streaming "+name_list[0]+" now!",'music']   
 
-        Music_filename = name_list[0]+".m4a" 
+        session['Music_filename'] = name_list[0]+".m4a" 
         music_stream = getMusicFile_key(id_list[0],name_list[0])
-        shutil.move(Music_filename, base_music_dir + Music_filename)
+        shutil.move(session['Music_filename'], base_music_dir + session['Music_filename'])
         return [music_stream,"music"]
 
 
@@ -149,21 +150,21 @@ def get_associated_text(query):
         return ""
 
 
-def backend_pipeline(request,user_data):
+def backend_pipeline(filename,user_data):
     
     global output_audio_ready
-    global sel_feature
+    # global sel_feature
     
     output_audio_ready = "no"
 
-    f  = request.files['audio_data']
-    with open(base_inp_dir+ current_user.uname + "/" + f.filename,'wb') as audio:
-        f.save(audio)
+    # f  = request.files['audio_data']
+    # with open(base_inp_dir+ current_user.uname + "/" + f.filename,'wb') as audio:
+    #     f.save(audio)
         
     #STT
-    payload={'file':open(base_inp_dir+ current_user.uname + "/" + f.filename,'rb')}
+    payload={'file':open(base_inp_dir+ current_user.uname + "/" + filename,'rb')}
     r = requests.post(STT_href,files=payload)
-    print(r)
+    print(r.text)
     input_str=json.loads(r.text)['text'][0]
     print (input_str)
 
@@ -237,8 +238,6 @@ def backend_pipeline(request,user_data):
         final_input = final_input + input_str[i][0]
     payload={"input_str": final_input}
     r = requests.get(TTS_href, params=payload).json()
-
-    r = requests.get(TTS_href, params={"input_str":input_str[0]}).json()
     bytes_wav = bytes()
 
     byte_io = io.BytesIO(bytes_wav)
@@ -254,7 +253,7 @@ def backend_pipeline(request,user_data):
 
     output_audio_ready = "yes"
 
-    sel_feature = ", ".join([input_str[i][1] for i in range(len(input_str))])
+    session['sel_feature'] = ", ".join([input_str[i][1] for i in range(len(input_str))])
 
     return "OK"
 
@@ -278,6 +277,10 @@ def index():
 @login_required
 def home():
     if request.method=='GET':
+        session['sel_feature'] = ""
+        session['Music_filename'] = ""
+        session['music_thumbnail_url'] = ""
+        session['command_in_progress']=False
         return render_template('home.html',fname=current_user.fname)
     if request.method=="POST":
         user_location =json.loads(request.form['data'])
@@ -301,12 +304,35 @@ def home():
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='POST':
-        return backend_pipeline(request,session['user_data'])
+        global data
+        filename = request.files['audio_data'].filename
+        audio,sr = librosa.load(request.files['audio_data'])
+        labels = audio_classifier.detect(audio)
+        if labels[0]=="Finger snapping":
+            session['command_in_progress'] = True
+            print(session['command_in_progress'])
+            return {"continue":"YES"}
+        else:
+            if session['command_in_progress']:
+                if labels[0]=='Speech':
+                    data = np.append(data,audio)
+                    print(session['command_in_progress'])
+                    return {"continue":"YES"}
+                else:
+                    librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,data,sr)
+                    data=[]
+                    session['command_in_progress'] = False
+                    print(session['command_in_progress'])
+                    backend_pipeline(filename,session['user_data'])
+                    return {"continue":"NO"}
+            else:
+                print(session['command_in_progress'])
+                return {"continue":"YES"}
 
-@app.route('/check_audio_available', methods=['GET'])
-def check_audio_available():
-    if request.method=="GET":
-            return output_audio_ready
+# @app.route('/check_audio_available', methods=['GET'])
+# def check_audio_available():
+#     if request.method=="GET":
+#             return output_audio_ready
 
 @app.route('/fetch_output_audio', methods=['POST','GET'])
 def fetch_output_audio():
@@ -320,13 +346,13 @@ def fetch_output_audio():
 
 @app.route("/getfeature_name",methods = ['GET'])
 def getfeature_name():
-    return sel_feature
+    return session['sel_feature']
 
 @app.route("/fetch_music_audio",methods = ['GET','POST'])
 def fetch_music_audio():
-    global Music_filename
-    if request.method=="POST" and Music_filename!="":
-        return send_file(base_music_dir + Music_filename,mimetype="audio/m4a",as_attachment=True,attachment_filename=Music_filename)
+    # global Music_filename
+    if request.method=="POST" and session['Music_filename']!="":
+        return send_file(base_music_dir + session['Music_filename'],mimetype="audio/m4a",as_attachment=True,attachment_filename=session['Music_filename'])
 
 @app.route("/getWelcomeMessage",methods = ['GET','POST'])
 def getWelcomeMessage():
@@ -337,8 +363,8 @@ def getWelcomeMessage():
 @app.route("/getMusicDetails_toShow",methods=["GET"])
 def getMusicDetails_toShow():
     if request.method=="GET":
-        return Music_filename+"###--###"+music_thumbnail_url
+        return session['Music_filename']+"###--###"+session['music_thumbnail_url']
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
 

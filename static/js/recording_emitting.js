@@ -30,6 +30,9 @@ window.onload = function(){
         welcomeMessage.onload = function(evt) {
             URL.revokeObjectURL(objectUrl);     
         };
+        welcomeMessage.onended = function(evt) {
+            recordMode();
+        };
         welcomeMessage.load();
         welcomeMessage.play();  
     };
@@ -38,22 +41,21 @@ window.onload = function(){
 
 
 function ListeningMode() {
-    document.getElementById("mic-box").style.pointerEvents = "none";
-    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
+   
     recordMode();
 }
 
 function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
-    var xhttp = new XMLHttpRequest();
-    var req = "no";
-    // xhttp.open('GET',"http://127.0.0.1:5000/check",false);
-    do{
-        sleep(1000);
-        xhttp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
-        xhttp.send();
-        req = xhttp.responseText;
-    }while(req=="no");
+    // var xhttp = new XMLHttpRequest();
+    // var req = "no";
+    // // xhttp.open('GET',"http://127.0.0.1:5000/check",false);
+    // do{
+    //     sleep(1000);
+    //     xhttp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
+    //     xhttp.send();
+    //     req = xhttp.responseText;
+    // }while(req=="no");
     console.log("Speaking mode");
     SpeakingMode();
 }
@@ -84,17 +86,20 @@ function SpeakingMode() {
         output_aud.onload = function(evt) {
             URL.revokeObjectURL(objectUrl);     
         };
+        output_aud.onended = function(){
+            var xhtp = new XMLHttpRequest();
+            xhtp.open('GET',"http://127.0.0.1:5000/getfeature_name",false);
+            xhtp.send();
+            feature_just_selected = xhtp.responseText;
+        
+            additional_request(feature_just_selected.split(", "),output_aud.duration); 
+        };
         output_aud.load();
         output_aud.play();  
     };
     xhttp.send();
 
-    var xhtp = new XMLHttpRequest();
-    xhtp.open('GET',"http://127.0.0.1:5000/getfeature_name",false);
-    xhtp.send();
-    feature_just_selected = xhtp.responseText;
-
-    additional_request(feature_just_selected.split(", "),output_aud.duration);
+    
     // var xhr = new XMLHttpRequest();
     // xhttp.responseType = 'text';
     // var req = "stay";
@@ -166,6 +171,7 @@ function additional_request(feature_just_selected,duration_sleep)
     xhtp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
     xhtp.send();
     feature_just_selected = xhtp.responseText;
+    recordMode();
     reset();
 }
 
@@ -175,7 +181,8 @@ function reset() {
 }
 
 function recordMode() {
-
+    document.getElementById("mic-box").style.pointerEvents = "none";
+    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     var constraints = { audio: true, video: false }
 
     navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
@@ -203,7 +210,7 @@ function recordMode() {
 
             console.log("Recording done")
 
-        }, 5100);
+        }, 3000);
     }).catch((error) => {
       this.setState({
           error: error.message
@@ -225,10 +232,21 @@ function uploadWAVFile(blob) {
     var xhr = new XMLHttpRequest();
     var fd = new FormData();
     fd.append("audio_data", blob, filename + '.wav');
+    xhr.onreadystatechange = function() {
+        if (this.readyState==4){
+            // console.log(times);
+            if (JSON.parse(xhr.responseText)["continue"]=="YES"){
+                recordMode();
+            }
+            else{
+                ProcessMode();
+            }
+        }
+    };
     xhr.open("POST", "http://127.0.0.1:5000/process", true);
 
     xhr.send(fd);
 
-    ProcessMode();
+    // ProcessMode();
 
 }
