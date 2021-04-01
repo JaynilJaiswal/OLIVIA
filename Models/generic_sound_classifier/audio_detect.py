@@ -24,11 +24,11 @@ class AudioClassifier:
         self.fmin = 50
         self.fmax = 14000
 
-        self.cuda = True
+        self.cuda = False
 
         self.model_dir = 'Models/generic_sound_classifier/models/'
-        # self.model_path = self.model_dir + 'Cnn9_GMP_64x64_300000_iterations_mAP=0.37.pth'
-        self.model_path = self.model_dir + 'Cnn13_GMP_64x64_520000_iterations_mAP=0.42.pth'
+        self.model_path = self.model_dir + 'Cnn9_GMP_64x64_300000_iterations_mAP=0.37.pth'
+        # self.model_path = self.model_dir + 'Cnn13_GMP_64x64_520000_iterations_mAP=0.42.pth'
         self.scalar_fn = self.model_dir + 'scalar.h5'
         self.csv_fname = self.model_dir + 'validate_meta.csv'
 
@@ -44,8 +44,8 @@ class AudioClassifier:
             self.std = hf['std'][:]
         
         checkpoint = torch.load(self.model_path, map_location=lambda storage, loc: storage)
-        # self.model = models.Cnn9_GMP_64x64(527)
-        self.model = models.Cnn13_GMP_64x64(527)
+        self.model = models.Cnn9_GMP_64x64(527)
+        # self.model = models.Cnn13_GMP_64x64(527)
         self.model.load_state_dict(checkpoint['model'])
         if self.cuda:
             self.model.cuda()

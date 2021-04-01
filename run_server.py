@@ -32,9 +32,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 
-STT_href = "http://584dc438ef26.ngrok.io/"
-TTS_href = "http://299e3cc61060.ngrok.io/"
-NLU_href = "http://3795f4bb3c60.ngrok.io/"
+STT_href = "http://53db10c556bf.ngrok.io/"
+TTS_href = "http://4eed8b04639c.ngrok.io/"
+NLU_href = "http://f39e4a909aa5.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -308,26 +308,27 @@ def process():
         filename = request.files['audio_data'].filename
         audio,sr = librosa.load(request.files['audio_data'])
         labels = audio_classifier.detect(audio)
-        if labels[0]=="Finger snapping":
+        if labels[0]=="Speech" and session['command_in_progress']==False:
+            data = np.append(data,audio)
             session['command_in_progress'] = True
             print(session['command_in_progress'])
-            return {"continue":"YES"}
+            return {"continue":"YES","listen":"YES"}
         else:
             if session['command_in_progress']:
                 if labels[0]=='Speech':
                     data = np.append(data,audio)
                     print(session['command_in_progress'])
-                    return {"continue":"YES"}
+                    return {"continue":"YES","listen":"YES"}
                 else:
                     librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,data,sr)
                     data=[]
                     session['command_in_progress'] = False
                     print(session['command_in_progress'])
                     backend_pipeline(filename,session['user_data'])
-                    return {"continue":"NO"}
+                    return {"continue":"NO","listen":"NO"}
             else:
                 print(session['command_in_progress'])
-                return {"continue":"YES"}
+                return {"continue":"YES","listen":"NO"}
 
 # @app.route('/check_audio_available', methods=['GET'])
 # def check_audio_available():
@@ -366,5 +367,5 @@ def getMusicDetails_toShow():
         return session['Music_filename']+"###--###"+session['music_thumbnail_url']
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
 

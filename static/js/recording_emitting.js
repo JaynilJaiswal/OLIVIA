@@ -181,8 +181,6 @@ function reset() {
 }
 
 function recordMode() {
-    document.getElementById("mic-box").style.pointerEvents = "none";
-    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     var constraints = { audio: true, video: false }
 
     navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
@@ -236,6 +234,10 @@ function uploadWAVFile(blob) {
         if (this.readyState==4){
             // console.log(times);
             if (JSON.parse(xhr.responseText)["continue"]=="YES"){
+                if (JSON.parse(xhr.responseText)["listen"]=="YES"){
+                    document.getElementById("mic-box").style.pointerEvents = "none";
+                    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";    
+                }
                 recordMode();
             }
             else{
