@@ -34,7 +34,8 @@ def exactMatchingWords(text):
     for k in text.split(" "):
         for item in feature_db.items():
             if any(it == k for it in item[1]):
-                feature_selected.append(item[0])
+                if item[0] not in feature_selected:
+                    feature_selected.append(item[0])
 
     if len(feature_selected)==0:
         return ["no feature tag found",[]]

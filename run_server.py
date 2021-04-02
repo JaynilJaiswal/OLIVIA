@@ -29,9 +29,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 
-STT_href = "http://e7a1a89bfeda.ngrok.io/"
-TTS_href = "http://150a5fdc9f20.ngrok.io/"
-NLU_href = "http://faaa93427dd9.ngrok.io/"
+STT_href = "http://8c6f67495103.ngrok.io/"
+TTS_href = "http://d5d09f81795c.ngrok.io/"
+NLU_href = "http://a3e559091aa8.ngrok.io/"
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
 base_out_dir = "filesystem_for_data/Audio_output_files/"
@@ -92,7 +92,7 @@ def select_feature(name,user_data,query):
         song_detail = get_associated_text(query)
 
         [id_list,name_list,explicit_list,url] = getMusicDetails(song_detail)
-        music_thumbnail_url = url[0]
+        
 
         if id_list == 0: 
             return ["Music not found, please give a better description.","music"]
@@ -103,6 +103,8 @@ def select_feature(name,user_data,query):
         if path.exists(base_music_dir+ name_list[0] +".m4a"):
             Music_filename = name_list[0]+".m4a" 
             return ["Streaming "+name_list[0]+" now!",'music']   
+
+        music_thumbnail_url = url[0]
 
         Music_filename = name_list[0]+".m4a" 
         music_stream = getMusicFile_key(id_list[0],name_list[0])
@@ -145,6 +147,10 @@ def get_associated_text(query):
         return query.split("listen to")[1]
     if "lay" in query:
         return query.split("lay")[1]
+    if "song" in query:
+        return query.split("song")[0]
+    if "music" in query:
+        return query.split("music")[0]
     else:
         return ""
 
@@ -186,7 +192,7 @@ def backend_pipeline(request,user_data):
     if 'olivie' in text:
         text = text.split('olivie')[1].strip()
 
-    input_str = text + "?"
+    input_str = text
     # NEED to figure out punctuation issue.
     # input_str = corrector.correct(text)[0]['sequence']
     print("Preprocessed text: " + input_str)
@@ -234,11 +240,10 @@ def backend_pipeline(request,user_data):
     #TTS        
     final_input = ""
     for i in range(len(input_str)):
-        final_input = final_input + input_str[i][0]
+        final_input = final_input + "..." + input_str[i][0]
     payload={"input_str": final_input}
     r = requests.get(TTS_href, params=payload).json()
 
-    r = requests.get(TTS_href, params={"input_str":input_str[0]}).json()
     bytes_wav = bytes()
 
     byte_io = io.BytesIO(bytes_wav)
