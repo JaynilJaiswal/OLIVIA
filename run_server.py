@@ -32,9 +32,9 @@ from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 
-STT_href = "http://5689674ffbff.ngrok.io/"
-TTS_href = "http://c06e8e84318d.ngrok.io/"
-NLU_href = "http://aa00da66947e.ngrok.io/"
+STT_href = "http://343d2fcf0a21.ngrok.io/"
+TTS_href = "http://1d0383130694.ngrok.io/"
+NLU_href = "http://95721c179843.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -312,20 +312,31 @@ def process():
         filename = request.files['audio_data'].filename
         audio,sr = librosa.load(request.files['audio_data'])
         labels = audio_classifier.detect(audio)
-        print (len(audio))
+        print (len(audio),labels)
         if "Finger snapping" in labels:
-            # session['command_in_progress'] = True
-            # print(session['command_in_progress'])
+            session['command_in_progress'] = True
+            print(session['command_in_progress'])
             return {"continue":"YES","listen":"YES"}
         else:
-            if labels[0]=='Speech' and len(audio)>=100000:
-                librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
-                # session['command_in_progress']=False
-                backend_pipeline(filename,session['user_data'])
-                return {"continue":"NO","listen":"NO"}
+            if labels[0]=='Speech':
+                if session['command_in_progress']:
+                    print(session['command_in_progress'])                    
+                    session['command_in_progress']=False
+                    librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
+                    backend_pipeline(filename,session['user_data'])
+                    return {"continue":"NO","listen":"NO"}
+                else:
+                    print(session['command_in_progress'])
+                    return {"continue":"YES","listen":"NO"}
             else:
+                print(session['command_in_progress'])
+                session['command_in_progress']=False
                 return {"continue":"YES", "listen":"NO"}
 
+@app.route("/set_command",methods = ['POST'])
+def set_command():
+    session['command_in_progress']=True
+    return "OK"
 
 
 @app.route('/fetch_output_audio', methods=['POST','GET'])
