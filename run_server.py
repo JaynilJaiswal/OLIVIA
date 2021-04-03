@@ -146,6 +146,10 @@ def get_associated_text(query):
         return query.split("listen to")[1]
     if "lay" in query:
         return query.split("lay")[1]
+    if "song" in query:
+        return query.split("song")[0]
+    if "music" in query:
+        return query.split("music")[0]
     else:
         return ""
 
@@ -187,7 +191,7 @@ def backend_pipeline(filename,user_data):
     if 'olivie' in text:
         text = text.split('olivie')[1].strip()
 
-    input_str = text + "?"
+    input_str = text
     # NEED to figure out punctuation issue.
     # input_str = corrector.correct(text)[0]['sequence']
     print("Preprocessed text: " + input_str)
@@ -235,7 +239,7 @@ def backend_pipeline(filename,user_data):
     #TTS        
     final_input = ""
     for i in range(len(input_str)):
-        final_input = final_input + input_str[i][0]
+        final_input = final_input + "..." + input_str[i][0]
     payload={"input_str": final_input}
     r = requests.get(TTS_href, params=payload).json()
     bytes_wav = bytes()
