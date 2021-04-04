@@ -44,6 +44,33 @@ class User_command_history(UserMixin,db.Model):
     command_output_text = db.Column(db.String(300))
     user_base = db.relationship("User",backref=db.backref("user_base_ch", uselist=False))
 
+class User_music(UserMixin,db.Model):
+    __tablename__ = 'user_music'
+    id = db.Column(db.Integer, primary_key=True)
+    user_base_id = db.Column(db.Integer, db.ForeignKey('user_base.id'))
+    command_time = db.Column('dateTime_created', db.DateTime, nullable=False, default=datetime.datetime.utcnow)   
+    command_input_text = db.Column(db.String(500))
+    command_music_name = db.Column(db.String(150))
+    command_selected_music_filepath = db.Column(db.String(150))
+    user_base = db.relationship("User",backref=db.backref("user_base_music", uselist=False))
+
+class User_contacts(UserMixin,db.Model):
+    __tablename__ = 'user_contacts'
+    id = db.Column(db.Integer, primary_key=True)
+    user_base_id = db.Column(db.Integer, db.ForeignKey('user_base.id'))
+    contact_time_created = db.Column('dateTime_created', db.DateTime, nullable=False, default=datetime.datetime.utcnow)   
+    contact_fname = db.Column(db.String(50))
+    contact_lname = db.Column(db.String(50))
+    contact_email = db.Column(db.String(50))
+    contact_mobile_number = db.Column(db.String(50))
+    contact_second_email = db.Column(db.String(50))
+    contact_second_mobile_number = db.Column(db.String(50))
+    contact_third_email = db.Column(db.String(50))
+    contact_third_mobile_number = db.Column(db.String(50))
+    contact_type = db.Column(db.String(50))
+    contact_relation = db.Column(db.String(50))
+    command_selected_music_filepath = db.Column(db.String(150))
+    user_base = db.relationship("User",backref=db.backref("user_base_contacts", uselist=False))
 
     
 

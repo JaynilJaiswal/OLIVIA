@@ -11,13 +11,16 @@ import librosa
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 from flask_login import LoginManager
-from models.user import db, User,User_location ,User_command_history
+from models.user import db, User,User_location ,User_command_history, User_music, User_contacts
 from flask_login import login_required, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 # blueprint for auth routes in our app
 from models.auth import auth as auth_blueprint
+from findContactInfo import get_contact_info
 import shutil
 from os import path
+import spacy
+nlp =spacy.load('en_core_web_sm')
 
 db.create_all()
 
@@ -31,10 +34,11 @@ from features.weather import getWeather
 from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
+from features.email import send_email, findContact_details
 
-STT_href = "http://5689674ffbff.ngrok.io/"
-TTS_href = "http://c06e8e84318d.ngrok.io/"
-NLU_href = "http://aa00da66947e.ngrok.io/"
+STT_href = "http://ea3748c40740.ngrok.io/"
+TTS_href = "http://7331e5047b27.ngrok.io/"
+NLU_href = "http://f8b287f17924.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -90,7 +94,7 @@ def select_feature(name,user_data,query):
         return [getLocation(user_data['address']),"location"]
 
     if name == 'music':
-        song_detail = get_associated_text(query)
+        song_detail = get_associated_text(query,'music')
 
         [id_list,name_list,explicit_list,url] = getMusicDetails(song_detail)
         session['music_thumbnail_url'] = url[0]
@@ -112,8 +116,18 @@ def select_feature(name,user_data,query):
 
 
     if name =="email":
+        contact_name = get_associated_text(query,'email')
+        [score, fullName, email, number] = get_contact_info(db,User_contacts,current_usser.id, contact_name)
 
-        return ["Feature to be added soon.","email"]
+        if score == 0:
+            return ["No match found for sepcified person in your contacts list.","email"]
+        elif score == -1:
+            return ["Your contacts list is empty.","email"]
+
+        if email == "None":
+            return ["Contact details of the person doesn't contain email address. Please add it.","email"]
+
+        return ["Initiating email to"+]
 
     if name =="alarm reminder":
         return ["Feature to be added soon.","alarm reminder"]
@@ -137,21 +151,36 @@ def select_feature(name,user_data,query):
         return ["Feature to be added soon.","translation"]
 
 
-def get_associated_text(query):
-    if "play" in query:
-        return query.split("play")[1]
-    if "listen to" in query:
-        return query.split("listen to")[1]
-    if "listen" in query:
-        return query.split("listen to")[1]
-    if "lay" in query:
-        return query.split("lay")[1]
-    if "song" in query:
-        return query.split("song")[0]
-    if "music" in query:
-        return query.split("music")[0]
-    else:
-        return ""
+def get_associated_text(query,feature):
+    if feature == 'music':
+        if "play" in query:
+            return query.split("play")[1]
+        if "listen to" in query:
+            return query.split("listen to")[1]
+        if "listen" in query:
+            return query.split("listen to")[1]
+        if "lay" in query:
+            return query.split("lay")[1]
+        if "song" in query:
+            return query.split("song")[0]
+        if "music" in query:
+            return query.split("music")[0]
+        else:
+            return ""
+    elif feature == 'email':
+        # tagged = nlp(query)
+        # return [e.text for e in text.ents if e.label_=="PERSON"]
+        if "email" in query:
+            return query.split("email")[1]
+        if "mail" in query:
+            return query.split("mail")[1]
+        else:
+            return ""
+
+    return
+
+
+def running_feature(filename,user_data,feature_name):
 
 
 def backend_pipeline(filename,user_data):
@@ -294,7 +323,14 @@ def home():
 
         user_address = geolocator.reverse(str(user_location['lat'])+','+str(user_location['long'])).raw['address']
 
-        new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = user_address['city'], state_district = user_address['state_district'], state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+        if 'city' in user_address and 'state_district' in user_address:
+            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = user_address['city'], state_district = user_address['state_district'], state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+        elif 'city' not in user_address and 'state_district' in user_address:
+            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = "Not found", state_district = user_address['state_district'], state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+        elif 'city' in user_address and 'state_district' not in user_address:
+            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = user_address['city'], state_district = "Not found", state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+        else:
+            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = "Not found", state_district = "Not found", state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
         
         session['user_data']= {'location':user_location,'timezone':user_timezone,'address':user_address}
         print (session['user_data'])

@@ -39,7 +39,6 @@ window.onload = function(){
     xhttp.send();
 }
 
-
 function ListeningMode() {
     interrupt = "yes";
     document.getElementById("mic-box").style.pointerEvents = "none";

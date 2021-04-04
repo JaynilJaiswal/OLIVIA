@@ -1,17 +1,17 @@
 from simplegmail import Gmail
 
-base_gmail_cred_dir = "filesystem_for_data/gmail_cred/"
+def send_email(to,sender,subject,main_body):
 
-gmail = Gmail()
+    gmail = Gmail()
 
-def send_email(to,sender,)
-    os.chdir('../'+base_gmail_cred_dir+uname)
-    os.chdir('../../../')
+    params = {"to":to,"sender":sender,"subject":subject,"msg_html":main_body,"signature":True}
+    
+    messages = gmail.send_message(**params)
 
-def check_unread_emails()
-    os.chdir('../'+base_gmail_cred_dir+uname)
-    os.chdir('../../../')
+    return "Email sent successfully."
 
-def check_starred_emails()
-    os.chdir('../'+base_gmail_cred_dir+uname)
-    os.chdir('../../../')
+def check_unread_emails():
+    return
+
+def check_starred_emails():
+    return

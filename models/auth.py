@@ -5,6 +5,7 @@ from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from models.user import User, db
 from email_validator import validate_email, EmailNotValidError
+import shutil
 
 auth = Blueprint('auth', __name__)
 
@@ -108,6 +109,7 @@ def signup_post():
         os.mkdir(base_out_dir+uname)
     if not os.path.exists(base_gmail_cred_dir+uname):
         os.mkdir(base_gmail_cred_dir+uname)
+        shutil.copy("client_secret.json",base_gmail_cred_dir+uname)
 
 
     flash('Your account has been registered successfully!')
