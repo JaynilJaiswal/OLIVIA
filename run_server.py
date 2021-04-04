@@ -34,22 +34,17 @@ from features.weather import getWeather
 from features.location import getLocation
 from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
-from features.email import send_email, findContact_details
+from features.email import send_email
 
-<<<<<<< HEAD
-STT_href = "http://ea3748c40740.ngrok.io/"
-TTS_href = "http://7331e5047b27.ngrok.io/"
-NLU_href = "http://f8b287f17924.ngrok.io/"
-=======
 STT_href = "http://343d2fcf0a21.ngrok.io/"
 TTS_href = "http://1d0383130694.ngrok.io/"
 NLU_href = "http://95721c179843.ngrok.io/"
->>>>>>> 11d1855d821b68d07cdcf138ea0bf2103143f5c6
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
 base_out_dir = "filesystem_for_data/Audio_output_files/"
 base_music_dir = "filesystem_for_data/Music_dir/"
+base_gmail_dir = "filesystem_for_data/gmail_cred/"
 
 base_default_dir = "default_messages/"
 
@@ -133,7 +128,10 @@ def select_feature(name,user_data,query):
         if email == "None":
             return ["Contact details of the person doesn't contain email address. Please add it.","email"]
 
-        return ["Initiating email to"+]
+        session["email-address"] = email
+        session["email-fullname"] = fullName
+
+        return ["Initiating email to "+fullName+". Please mention the subject of the email.","email"]
 
     if name =="alarm reminder":
         return ["Feature to be added soon.","alarm reminder"]
@@ -182,19 +180,110 @@ def get_associated_text(query,feature):
             return query.split("mail")[1]
         else:
             return ""
-
     return
 
 
-def running_feature(filename,user_data,feature_name):
+def iterative_running_feature(filename,stage,user_data,feature_name):
+    if feature_name == "email":
+        if stage == 1:
+            # global output_audio_ready
+            # global sel_feature
+            
+            # output_audio_ready = "no"
+                
+            #STT
+            payload={'file':open(base_inp_dir+ current_user.uname + "/" + filename,'rb')}
+            r = requests.post(STT_href,files=payload)
+            print(r.text)
+            input_str=json.loads(r.text)['text'][0]
+            print (input_str)
 
+            session["email-subject"] = input_str
+
+            db_com_str = "subject:" + input_str
+
+            if os.path.exists(base_gmail_dir+current_user.uname+"/gmail_token.json"):
+                output = "Please inform the message you want to convey to "+session["email-fullname"]+"."
+            else:
+                output = "Please inform the message you want to convey to "+session["email-fullname"]+". Also login to Google account via registered email address with OLIVIA."
+
+            new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + filename, command_feature_selected="email-subject", command_output_text = output)
+            db.add(new_user_ch)
+            db.commit()
+
+            # TTS
+            payload={"input_str": output}
+            r = requests.get(TTS_href, params=payload).json()
+            bytes_wav = bytes()
+
+            byte_io = io.BytesIO(bytes_wav)
+            write(byte_io, r['rate'], np.array(r['data'],np.int16))
+            
+            output_wav = byte_io.read() 
+            
+            if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
+                os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
+                
+            with open(base_out_dir+ current_user.uname + "/" + 'result.wav','bx') as f:
+                f.write(output_wav)
+
+            # output_audio_ready = "yes"
+
+            session['sel_feature'] = "email-stage2"
+            return "OK"
+
+        elif stage == 2:
+            # global output_audio_ready
+            # global sel_feature
+            
+            # output_audio_ready = "no"
+                
+            #STT
+            payload={'file':open(base_inp_dir+ current_user.uname + "/" + filename,'rb')}
+            r = requests.post(STT_href,files=payload)
+            print(r.text)
+            input_str=json.loads(r.text)['text'][0]
+            print (input_str)
+
+            session["email-body"] = input_str
+
+            db_com_str = "Body:" + input_str
+
+            os.chdir("filesystem_for_data/gmail_cred/"+current_user.uname)
+            output = send_email(session["email-address"],current_user.email,session["email-subject"],session["email-body"])
+            os.chdir('../../../')
+
+            new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + filename, command_feature_selected="email-body", command_output_text = output)
+            db.add(new_user_ch)
+            db.commit()
+
+            # TTS
+            payload={"input_str": output}
+            r = requests.get(TTS_href, params=payload).json()
+            bytes_wav = bytes()
+
+            byte_io = io.BytesIO(bytes_wav)
+            write(byte_io, r['rate'], np.array(r['data'],np.int16))
+            
+            output_wav = byte_io.read() 
+            
+            if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
+                os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
+                
+            with open(base_out_dir+ current_user.uname + "/" + 'result.wav','bx') as f:
+                f.write(output_wav)
+
+            # output_audio_ready = "yes"
+
+            session['sel_feature'] = "email-stage3"
+            return "OK"
 
 def backend_pipeline(filename,user_data):
     
-    global output_audio_ready
+    # global output_audio_ready
     # global sel_feature
     
-    output_audio_ready = "no"
+    # output_audio_ready = "no"
 
     # f  = request.files['audio_data']
     # with open(base_inp_dir+ current_user.uname + "/" + f.filename,'wb') as audio:
@@ -346,6 +435,7 @@ def home():
 
         db.session.commit()
         return "saved"
+
 
 @app.route('/process',methods=['GET','POST'])
 def process():

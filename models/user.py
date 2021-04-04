@@ -69,7 +69,6 @@ class User_contacts(UserMixin,db.Model):
     contact_third_mobile_number = db.Column(db.String(50))
     contact_type = db.Column(db.String(50))
     contact_relation = db.Column(db.String(50))
-    command_selected_music_filepath = db.Column(db.String(150))
     user_base = db.relationship("User",backref=db.backref("user_base_contacts", uselist=False))
 
     

@@ -11,6 +11,7 @@ var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext //audio context to help us record
 var interrupt = "no";
 feature_just_selected = "";
+var stage = 0;
 
 window.onload = function(){
 
@@ -172,6 +173,15 @@ function additional_request(feature_just_selected,duration_sleep)
             xhttp.send();
 
             //display modal
+        }
+
+        else if (feature_just_selected[i] == "email")
+        {
+            stage = 1;
+        }
+        else if (feature_just_selected[i] == "email-stage2")
+        {
+            stage = 2;
         }
     }
 
