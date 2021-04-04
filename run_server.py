@@ -36,9 +36,15 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email, findContact_details
 
+<<<<<<< HEAD
 STT_href = "http://ea3748c40740.ngrok.io/"
 TTS_href = "http://7331e5047b27.ngrok.io/"
 NLU_href = "http://f8b287f17924.ngrok.io/"
+=======
+STT_href = "http://343d2fcf0a21.ngrok.io/"
+TTS_href = "http://1d0383130694.ngrok.io/"
+NLU_href = "http://95721c179843.ngrok.io/"
+>>>>>>> 11d1855d821b68d07cdcf138ea0bf2103143f5c6
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -154,7 +160,7 @@ def select_feature(name,user_data,query):
 def get_associated_text(query,feature):
     if feature == 'music':
         if "play" in query:
-            return query.split("play")[1]
+            return query.split("play")[2]
         if "listen to" in query:
             return query.split("listen to")[1]
         if "listen" in query:
@@ -348,20 +354,31 @@ def process():
         filename = request.files['audio_data'].filename
         audio,sr = librosa.load(request.files['audio_data'])
         labels = audio_classifier.detect(audio)
-        print (len(audio))
+        print (len(audio),labels)
         if "Finger snapping" in labels:
-            # session['command_in_progress'] = True
-            # print(session['command_in_progress'])
+            session['command_in_progress'] = True
+            print(session['command_in_progress'])
             return {"continue":"YES","listen":"YES"}
         else:
-            if labels[0]=='Speech' and len(audio)>=100000:
-                librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
-                # session['command_in_progress']=False
-                backend_pipeline(filename,session['user_data'])
-                return {"continue":"NO","listen":"NO"}
+            if labels[0]=='Speech':
+                if session['command_in_progress']:
+                    print(session['command_in_progress'])                    
+                    session['command_in_progress']=False
+                    librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
+                    backend_pipeline(filename,session['user_data'])
+                    return {"continue":"NO","listen":"NO"}
+                else:
+                    print(session['command_in_progress'])
+                    return {"continue":"YES","listen":"NO"}
             else:
+                print(session['command_in_progress'])
+                session['command_in_progress']=False
                 return {"continue":"YES", "listen":"NO"}
 
+@app.route("/set_command",methods = ['POST'])
+def set_command():
+    session['command_in_progress']=True
+    return "OK"
 
 
 @app.route('/fetch_output_audio', methods=['POST','GET'])

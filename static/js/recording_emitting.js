@@ -43,7 +43,14 @@ function ListeningMode() {
     interrupt = "yes";
     document.getElementById("mic-box").style.pointerEvents = "none";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
-    recordMode(7000);
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState==4){
+            clickRecordMode(10000);
+        }
+    };
+    xhttp.open("POST", "http://127.0.0.1:5000/set_command", false);
+    xhttp.send();
 }
 
 function ProcessMode() {
@@ -168,10 +175,10 @@ function additional_request(feature_just_selected,duration_sleep)
         }
     }
 
-    var xhtp = new XMLHttpRequest();
-    xhtp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
-    xhtp.send();
-    feature_just_selected = xhtp.responseText;
+    // var xhtp = new XMLHttpRequest();
+    // xhtp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
+    // xhtp.send();
+    // feature_just_selected = xhtp.responseText;
     recordMode(1500);
     reset();
 }
@@ -180,8 +187,7 @@ function reset() {
     document.getElementById("mic-box").style.pointerEvents = "auto";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
 }
-
-function recordMode(time) {
+function clickRecordMode(time) {
     var constraints = { audio: true, video: false }
 
     navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
@@ -205,6 +211,41 @@ function recordMode(time) {
 
             gumStream.getAudioTracks()[0].stop();
             interrupt = "no";
+            rec.exportWAV(clickUploadWAVFile);
+
+            console.log("Recording done")
+
+        }, time);
+    }).catch((error) => {
+      this.setState({
+          error: error.message
+      });
+    });
+}
+function recordMode(time) {
+    var constraints = { audio: true, video: false }
+
+    navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+        console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
+
+        audioContext = new AudioContext();
+
+        gumStream = stream;
+
+        input = audioContext.createMediaStreamSource(stream);
+
+        rec = new Recorder(input, { numChannels: 1 })
+
+        rec.record()
+
+        console.log("Recording started");
+
+        setTimeout(function () {
+
+            rec.stop();
+
+            gumStream.getAudioTracks()[0].stop();
+            // interrupt = "no";
             rec.exportWAV(uploadWAVFile);
 
             console.log("Recording done")
@@ -223,6 +264,26 @@ function blobToFile(theBlob, fileName) {
     return theBlob;
 }
 
+function clickUploadWAVFile(blob) {
+    var input = document.createElement('input');
+    input.type = "file";
+    var filename = new Date().toISOString();
+
+    var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    fd.append("audio_data", blob, filename + '.wav');
+    xhr.onreadystatechange = function() {
+        if (this.readyState==4){
+            // console.log(times);
+            ProcessMode();
+        }
+    };
+    xhr.open("POST", "http://127.0.0.1:5000/process", true);
+    xhr.send(fd);
+    // ProcessMode();
+
+}
+
 function uploadWAVFile(blob) {
     var input = document.createElement('input');
     input.type = "file";
@@ -234,27 +295,25 @@ function uploadWAVFile(blob) {
     xhr.onreadystatechange = function() {
         if (this.readyState==4){
             // console.log(times);
-            if (interrupt=="no"){
-                if (JSON.parse(xhr.responseText)["continue"]=="YES"){
-                    if (JSON.parse(xhr.responseText)["listen"]=="YES"){
-                        // document.getElementById("mic-box").style.pointerEvents = "none";
-                        document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";   
-                        recordMode(10000); 
-                    }
-                    else{
-                        recordMode(1500);
-                    }
+            if (JSON.parse(xhr.responseText)["continue"]=="YES"){
+                if (JSON.parse(xhr.responseText)["listen"]=="YES"){
+                    document.getElementById("mic-box").style.pointerEvents = "none";
+                    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";   
+                    recordMode(10000); 
                 }
                 else{
-                    ProcessMode();
+                    recordMode(1500);
                 }
+            }
+            else{
+                ProcessMode();
             }
         }
     };
     xhr.open("POST", "http://127.0.0.1:5000/process", true);
-
-    xhr.send(fd);
-
+    if (interrupt=="no"){
+        xhr.send(fd);
+    }
     // ProcessMode();
 
 }
