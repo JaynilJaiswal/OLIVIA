@@ -36,9 +36,9 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email
 
-STT_href = "http://343d2fcf0a21.ngrok.io/"
-TTS_href = "http://1d0383130694.ngrok.io/"
-NLU_href = "http://95721c179843.ngrok.io/"
+STT_href = "http://28fed358fe69.ngrok.io/"
+TTS_href = "http://e108631616e2.ngrok.io/"
+NLU_href = "http://3ff6be7178a2.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -118,7 +118,7 @@ def select_feature(name,user_data,query):
 
     if name =="email":
         contact_name = get_associated_text(query,'email')
-        [score, fullName, email, number] = get_contact_info(db,User_contacts,current_usser.id, contact_name)
+        [score, fullName, email, number] = get_contact_info(db,User_contacts,current_user.id, contact_name)
 
         if score == 0:
             return ["No match found for sepcified person in your contacts list.","email"]
@@ -379,8 +379,6 @@ def backend_pipeline(filename,user_data):
     with open(base_out_dir+ current_user.uname + "/" + 'result.wav','bx') as f:
         f.write(output_wav)
 
-    output_audio_ready = "yes"
-
     session['sel_feature'] = ", ".join([input_str[i][1] for i in range(len(input_str))])
 
     return "OK"
@@ -440,30 +438,36 @@ def home():
 @app.route('/process',methods=['GET','POST'])
 def process():
     if request.method=='POST':
-        global data
         filename = request.files['audio_data'].filename
         audio,sr = librosa.load(request.files['audio_data'])
-        labels = audio_classifier.detect(audio)
-        print (len(audio),labels)
-        if "Finger snapping" in labels:
-            session['command_in_progress'] = True
-            print(session['command_in_progress'])
-            return {"continue":"YES","listen":"YES"}
-        else:
-            if labels[0]=='Speech':
-                if session['command_in_progress']:
-                    print(session['command_in_progress'])                    
-                    session['command_in_progress']=False
-                    librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
-                    backend_pipeline(filename,session['user_data'])
-                    return {"continue":"NO","listen":"NO"}
+        print(request.form['stage'])
+        if request.form['stage']=='0':
+            labels = audio_classifier.detect(audio)
+            print (len(audio),labels)
+            if "Finger snapping" in labels:
+                session['command_in_progress'] = True
+                print(session['command_in_progress'])
+                return {"continue":"YES","listen":"YES"}
+            else:
+                if labels[0]=='Speech':
+                    if session['command_in_progress']:
+                        print(session['command_in_progress'])                    
+                        session['command_in_progress']=False
+                        librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
+                        backend_pipeline(filename,session['user_data'])
+                        return {"continue":"NO","listen":"NO"}
+                    else:
+                        print(session['command_in_progress'])
+                        return {"continue":"YES","listen":"NO"}
                 else:
                     print(session['command_in_progress'])
-                    return {"continue":"YES","listen":"NO"}
-            else:
-                print(session['command_in_progress'])
-                session['command_in_progress']=False
-                return {"continue":"YES", "listen":"NO"}
+                    session['command_in_progress']=False
+                    return {"continue":"YES", "listen":"NO"}
+        else:
+            print(request.form['stage'])
+            librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
+            iterative_running_feature(filename,ord(request.form['stage'])-ord('0'),session['user_data'],request.form['feature'])
+            return "OK"
 
 @app.route("/set_command",methods = ['POST'])
 def set_command():

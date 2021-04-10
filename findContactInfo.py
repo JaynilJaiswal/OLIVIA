@@ -6,8 +6,9 @@ def get_contact_info(db,User_contacts,user_base_id, person_name):
 
     if len(userId_contacts) == 0:
         return [-1,-1,-1,-1]
-
-    userId_contacts_name_email_num = [[contact_fname + " " +contact_lname, e.contact_email,e.contact_mobile_number] for e in userId_contacts]
+    # contact_fname = "tester"
+    # contact_lname = "human"
+    userId_contacts_name_email = [[e.contact_fname + " " +e.contact_lname, e.contact_email,e.contact_mobile_number] for e in userId_contacts]
 
     name_similarity = [[0,0,0,0]]*len(userId_contacts_name_email)
 
@@ -20,3 +21,4 @@ def get_contact_info(db,User_contacts,user_base_id, person_name):
         return best_matched_contact
     else:
         return [0,0,0,0]
+    # return [0.8]+userId_contacts_name_email_num[0]
