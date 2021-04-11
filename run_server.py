@@ -36,9 +36,9 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email
 
-STT_href = "http://28fed358fe69.ngrok.io/"
-TTS_href = "http://e108631616e2.ngrok.io/"
-NLU_href = "http://3ff6be7178a2.ngrok.io/"
+STT_href = "http://c8a302b12556.ngrok.io/"
+TTS_href = "http://ba4b15178ea3.ngrok.io/"
+NLU_href = "http://1a276e27dd79.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -449,20 +449,21 @@ def process():
                 print(session['command_in_progress'])
                 return {"continue":"YES","listen":"YES"}
             else:
-                if labels[0]=='Speech':
-                    if session['command_in_progress']:
-                        print(session['command_in_progress'])                    
-                        session['command_in_progress']=False
-                        librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
+                if session['command_in_progress'] and ('Speech' in labels):
+                    print(session['command_in_progress'])                    
+                    session['command_in_progress']=False
+                    librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
+                    try:
                         backend_pipeline(filename,session['user_data'])
-                        return {"continue":"NO","listen":"NO"}
-                    else:
-                        print(session['command_in_progress'])
-                        return {"continue":"YES","listen":"NO"}
+                    except:
+                        session['command_in_progress']=False
+                        print("Exception in backend_pipeline")
+
+                    return {"continue":"NO","listen":"NO"}
                 else:
                     print(session['command_in_progress'])
                     session['command_in_progress']=False
-                    return {"continue":"YES", "listen":"NO"}
+                    return {"continue":"YES","listen":"NO"}
         else:
             print(request.form['stage'])
             librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)

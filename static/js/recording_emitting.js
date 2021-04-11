@@ -43,11 +43,11 @@ window.onload = function(){
 function ListeningMode() {
     interrupt = "yes";
     document.getElementById("mic-box").style.pointerEvents = "none";
-    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState==4){
-            clickRecordMode(10000);
+            document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
+            justRecordMode(10000);
         }
     };
     xhttp.open("POST", "http://127.0.0.1:5000/set_command", false);
@@ -214,41 +214,7 @@ function reset() {
     document.getElementById("mic-box").style.pointerEvents = "auto";
     document.body.style.backgroundImage = "url(../static/images/VA_anim4-0.png)";
 }
-function clickRecordMode(time) {
-    var constraints = { audio: true, video: false }
 
-    navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
-        console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
-
-        audioContext = new AudioContext();
-
-        gumStream = stream;
-
-        input = audioContext.createMediaStreamSource(stream);
-
-        rec = new Recorder(input, { numChannels: 1 })
-
-        rec.record()
-
-        console.log("Recording started");
-
-        setTimeout(function () {
-
-            rec.stop();
-
-            gumStream.getAudioTracks()[0].stop();
-            interrupt = "no";
-            rec.exportWAV(clickUploadWAVFile);
-
-            console.log("Recording done")
-
-        }, time);
-    }).catch((error) => {
-      this.setState({
-          error: error.message
-      });
-    });
-}
 function justRecordMode(time) {
     var constraints = { audio: true, video: false }
 
@@ -327,28 +293,6 @@ function blobToFile(theBlob, fileName) {
 }
 
 function justUploadWAVFile(blob) {
-    var input = document.createElement('input');
-    input.type = "file";
-    var filename = new Date().toISOString();
-
-    var xhr = new XMLHttpRequest();
-    var fd = new FormData();
-    fd.append("stage",stage);
-    fd.append("feature",current_feature);
-    fd.append("audio_data", blob, filename + '.wav');
-    xhr.onreadystatechange = function() {
-        if (this.readyState==4){
-            // console.log(times);
-            ProcessMode();
-        }
-    };
-    xhr.open("POST", "http://127.0.0.1:5000/process", true);
-    xhr.send(fd);
-    // ProcessMode();
-
-}
-
-function clickUploadWAVFile(blob) {
     var input = document.createElement('input');
     input.type = "file";
     var filename = new Date().toISOString();

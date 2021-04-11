@@ -84,7 +84,7 @@ class AudioClassifier:
             y = self.model(x)
 
         prob = y.data.cpu().numpy().squeeze(axis=0)
-        predict_idxs = prob.argsort()[-3:][::-1]
+        predict_idxs = prob.argsort()[-6:][::-1]
         predict_probs = prob[predict_idxs]
         return predict_idxs, predict_probs
 
