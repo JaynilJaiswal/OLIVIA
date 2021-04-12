@@ -305,7 +305,12 @@ function justUploadWAVFile(blob) {
     xhr.onreadystatechange = function() {
         if (this.readyState==4){
             // console.log(times);
-            ProcessMode();
+            if (JSON.parse(xhr.responseText)["continue"]=="YES"){
+                recordMode(1500);
+            }
+            else{
+                ProcessMode();
+            }
         }
     };
     xhr.open("POST", "http://127.0.0.1:5000/process", true);

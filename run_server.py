@@ -449,17 +449,19 @@ def process():
                 print(session['command_in_progress'])
                 return {"continue":"YES","listen":"YES"}
             else:
-                if session['command_in_progress'] and ('Speech' in labels):
+                if session['command_in_progress']:
                     print(session['command_in_progress'])                    
                     session['command_in_progress']=False
                     librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
                     try:
                         backend_pipeline(filename,session['user_data'])
+                        return {"continue":"NO","listen":"NO"}
                     except:
                         session['command_in_progress']=False
                         print("Exception in backend_pipeline")
+                        return {"continue":"YES","listen":"NO"}
 
-                    return {"continue":"NO","listen":"NO"}
+                    # return {"continue":"NO","listen":"NO"}
                 else:
                     print(session['command_in_progress'])
                     session['command_in_progress']=False
@@ -468,7 +470,7 @@ def process():
             print(request.form['stage'])
             librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
             iterative_running_feature(filename,ord(request.form['stage'])-ord('0'),session['user_data'],request.form['feature'])
-            return "OK"
+            return {"continue":"NO"}
 
 @app.route("/set_command",methods = ['POST'])
 def set_command():
