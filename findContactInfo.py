@@ -1,6 +1,8 @@
 from models.user import db, User,User_location ,User_command_history, User_music, User_contacts
 from similarity.jarowinkler import JaroWinkler
 
+jarowinkler = JaroWinkler()
+
 def get_contact_info(db,User_contacts,user_base_id, person_name):
     userId_contacts = list(db.query(User_contacts).filter_by(user_base_id=user_base_id))
 
@@ -21,4 +23,3 @@ def get_contact_info(db,User_contacts,user_base_id, person_name):
         return best_matched_contact
     else:
         return [0,0,0,0]
-    # return [0.8]+userId_contacts_name_email_num[0]

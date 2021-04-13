@@ -36,9 +36,9 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email
 
-STT_href = "http://c8a302b12556.ngrok.io/"
-TTS_href = "http://ba4b15178ea3.ngrok.io/"
-NLU_href = "http://1a276e27dd79.ngrok.io/"
+STT_href = "http://fcb84aa011dd.ngrok.io/"
+TTS_href = "http://1873a590dfce.ngrok.io/"
+NLU_href = "http://043cbcf13d8c.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -158,7 +158,7 @@ def select_feature(name,user_data,query):
 def get_associated_text(query,feature):
     if feature == 'music':
         if "play" in query:
-            return query.split("play")[2]
+            return query.split("play")[1]
         if "listen to" in query:
             return query.split("listen to")[1]
         if "listen" in query:
@@ -250,8 +250,10 @@ def iterative_running_feature(filename,stage,user_data,feature_name):
             db_com_str = "Body:" + input_str
 
             os.chdir("filesystem_for_data/gmail_cred/"+current_user.uname)
+            print("Input Params: "+session["email-address"]+" " +current_user.email+" "+session["email-subject"]+" "+session["email-body"])
             output = send_email(session["email-address"],current_user.email,session["email-subject"],session["email-body"])
             os.chdir('../../../')
+                
 
             new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + filename, command_feature_selected="email-body", command_output_text = output)
             db.add(new_user_ch)
@@ -449,17 +451,19 @@ def process():
                 print(session['command_in_progress'])
                 return {"continue":"YES","listen":"YES"}
             else:
-                if session['command_in_progress'] and ('Speech' in labels):
+                if session['command_in_progress']:
                     print(session['command_in_progress'])                    
                     session['command_in_progress']=False
                     librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
                     try:
                         backend_pipeline(filename,session['user_data'])
+                        return {"continue":"NO","listen":"NO"}
                     except:
                         session['command_in_progress']=False
                         print("Exception in backend_pipeline")
+                        return {"continue":"YES","listen":"NO"}
 
-                    return {"continue":"NO","listen":"NO"}
+                    # return {"continue":"NO","listen":"NO"}
                 else:
                     print(session['command_in_progress'])
                     session['command_in_progress']=False
@@ -468,7 +472,7 @@ def process():
             print(request.form['stage'])
             librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
             iterative_running_feature(filename,ord(request.form['stage'])-ord('0'),session['user_data'],request.form['feature'])
-            return "OK"
+            return {"continue":"NO"}
 
 @app.route("/set_command",methods = ['POST'])
 def set_command():
