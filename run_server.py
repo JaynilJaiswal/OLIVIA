@@ -36,9 +36,9 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email
 
-STT_href = "http://6c42eba0ba79.ngrok.io/"
-TTS_href = "http://df98c60993d3.ngrok.io/"
-NLU_href = "http://a3cb25ebaa65.ngrok.io/"
+STT_href = "http://319859b7afcb.ngrok.io/"
+TTS_href = "http://255b17ab3488.ngrok.io/"
+NLU_href = "http://0ef90214baf5.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -397,6 +397,7 @@ def load_user(user_id):
 def index():
     if request.method=='GET':
         if current_user.is_authenticated:
+            session['add_contacts_post_requests']=False
             return redirect(url_for('home'))
         else:
             return render_template('index.html')
@@ -409,7 +410,13 @@ def home():
         session['Music_filename'] = ""
         session['music_thumbnail_url'] = ""
         session['command_in_progress']=False
-        return render_template('home.html',fname=current_user.fname,getWelcome_msg="true")
+        
+        if(session['add_contacts_post_requests']!=True):
+            return render_template('home.html',fname=current_user.fname,getWelcome_msg="true")
+        else:
+            session['add_contacts_post_requests']=False
+            return render_template('home.html',fname=current_user.fname,getWelcome_msg="false")
+
     if request.method=="POST":
         user_location =json.loads(request.form['data'])
 
@@ -504,11 +511,9 @@ def add_contacts():
         db.add(new_contact)
         db.commit()
 
-        session['sel_feature'] = ""
-        session['Music_filename'] = ""
-        session['music_thumbnail_url'] = ""
-        session['command_in_progress']=False
-        return render_template('home.html',fname=current_user.fname,getWelcome_msg="false")
+        session['add_contacts_post_requests']= True
+
+        return redirect(url_for('home'))
 
 @app.route("/getfeature_name",methods = ['GET'])
 def getfeature_name():

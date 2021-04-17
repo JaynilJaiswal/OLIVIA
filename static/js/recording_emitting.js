@@ -21,15 +21,16 @@ window.onload = function(){
 
 function callWelcomeMessage_and_start(){
 
-    welcomeMessage = document.getElementById('default-messages'); 
-    
-    var xhttp = new XMLHttpRequest();
-    
-    xhttp.open('POST', encodeURI('http://127.0.0.1:5000/getWelcomeMessage'));
-    xhttp.setRequestHeader('Content-Type', 'application/json');
-    xhttp.responseType = 'blob';
     if(document.getElementById('getWeclome_msg').innerHTML == "true")
     {
+        welcomeMessage = document.getElementById('default-messages'); 
+    
+        var xhttp = new XMLHttpRequest();
+        
+        xhttp.open('POST', encodeURI('http://127.0.0.1:5000/getWelcomeMessage'));
+        xhttp.setRequestHeader('Content-Type', 'application/json');
+        xhttp.responseType = 'blob';
+
         xhttp.onload = function(evt) {
             var blob = new Blob([xhttp.response], {type: 'audio/wav'});
             
@@ -69,15 +70,6 @@ function ListeningMode() {
 
 function ProcessMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_processing.gif)";
-    // var xhttp = new XMLHttpRequest();
-    // var req = "no";
-    // // xhttp.open('GET',"http://127.0.0.1:5000/check",false);
-    // do{
-    //     sleep(1000);
-    //     xhttp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
-    //     xhttp.send();
-    //     req = xhttp.responseText;
-    // }while(req=="no");
     console.log("Speaking mode");
     SpeakingMode();
 }
@@ -121,19 +113,6 @@ function SpeakingMode() {
         output_aud.play();  
     };
     xhttp.send();
-
-    
-    // var xhr = new XMLHttpRequest();
-    // xhttp.responseType = 'text';
-    // var req = "stay";
-
-    // do{
-    //   xhr.open('GET',"http://127.0.0.1:5000/fetch_output_audio",true);
-    //     xhr.send();
-    //     req = xhr.responseText;
-    // }while(req != "output file removed")
-
-    // if (req == "output file removed"){reset();}
     
 }
 
@@ -146,6 +125,8 @@ function additional_request(feature_just_selected,duration_sleep)
         if (feature_just_selected[i] == "music"){
 
             document.getElementById('music-modal').style.display = "block";
+            interrupt = "yes";
+
             // document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
             console.log("music feature");
 
@@ -190,14 +171,17 @@ function additional_request(feature_just_selected,duration_sleep)
         }
         else if (feature_just_selected[i] == "email-contact-not-found"){
             document.getElementById('contacts-modal').style.display = "block";
+            interrupt = "yes";
             console.log("music feature");
         }
         else if (feature_just_selected[i] == "email-contact-empty"){
             document.getElementById('contacts-modal').style.display = "block";
+            interrupt = "yes";
             console.log("music feature");
         }
         else if (feature_just_selected[i] == "email-email-not-found"){
             document.getElementById('contacts-modal').style.display = "block";
+            interrupt = "yes";
             console.log("music feature");
         }
 
@@ -223,10 +207,6 @@ function additional_request(feature_just_selected,duration_sleep)
         }
     }
 
-    // var xhtp = new XMLHttpRequest();
-    // xhtp.open('GET',"http://127.0.0.1:5000/check_audio_available",false);
-    // xhtp.send();
-    // feature_just_selected = xhtp.responseText;
     if (interrupt=="no"){
             recordMode(1500);
             reset();

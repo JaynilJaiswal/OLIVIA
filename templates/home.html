@@ -125,7 +125,9 @@
     {% endif %}
     <div id="contacts-modal" class="modal">
         <form class="modal-content animate" action="{{ url_for('add_contacts')}}" method='POST'>
-            <span onclick="document.getElementById('contacts-modal').style.display = 'none';" class="close">&times;</span><br/><br/><br/><br/>
+            <span onclick="document.getElementById('contacts-modal').style.display = 'none';interrupt = 'no'; recordMode(1500);" class="close">&times;</span><br/><br/><br/><br/>
+            
+            <h1>Add To Contacts</h1>
             <div>
                 <label for="fname"><b>Firstname</b></label>
                 <input type="text" placeholder="firstname" name="fname" id ="fname"required>
@@ -145,13 +147,13 @@
                 <label for="second_mobile_number"><b>Secondary mobile number</b></label>
                 <input type="text" placeholder="mobile number" name="second_mobile_number" id="second_mobile_number" ><br/>
                 
-                <center><input type="submit" style="width:100px;">Add Contact</input></center>
+                <center><input type="submit" onclick="interrupt = 'no'; recordMode(1500);" style="width:100px;"></input></center>
             </div>
         </form>
     </div>
     <div id="music-modal" class="modal">
         <div class="modal-content animate">
-            <span onclick="document.getElementById('music-modal').style.display = 'none';document.getElementById('music-player').pause();" class="close">&times;</span><br/><br/><br/><br/>
+            <span onclick="document.getElementById('music-modal').style.display = 'none';document.getElementById('music-player').pause();interrupt = 'no'; recordMode(1500);" class="close">&times;</span><br/><br/><br/><br/>
             <img id="thumbnail-image" src="test.png" alt="Music Label Image" class="avatar"> 
             <h3 id="music-album-name" style="font: size 18px;"></h3>
             <audio id="music-player" class="music-player" controls autoplay></audio>
