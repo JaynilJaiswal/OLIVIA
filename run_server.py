@@ -36,9 +36,9 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email
 
-STT_href = "http://6e8ef08e924f.ngrok.io/"
-TTS_href = "http://231f780656ff.ngrok.io/"
-NLU_href = "http://4c3226679a19.ngrok.io/"
+STT_href = "http://6c42eba0ba79.ngrok.io/"
+TTS_href = "http://df98c60993d3.ngrok.io/"
+NLU_href = "http://a3cb25ebaa65.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -409,7 +409,7 @@ def home():
         session['Music_filename'] = ""
         session['music_thumbnail_url'] = ""
         session['command_in_progress']=False
-        return render_template('home.html',fname=current_user.fname)
+        return render_template('home.html',fname=current_user.fname,getWelcome_msg="true")
     if request.method=="POST":
         user_location =json.loads(request.form['data'])
 
@@ -492,22 +492,23 @@ def fetch_output_audio():
         
 @app.route('/add_contacts',methods=['POST'])
 def add_contacts():
-    fname = request.form.get('fname')
-    lname = request.form.get('lname')
-    email = request.form.get('email')
-    mobile_number = request.form.get('mobile_number')
-    s_email = request.form.get('second_email')
-    s_mobile_number = request.form.get('second_mobile_number')
+    if request.method == 'POST':
+        fname = request.form['fname']
+        lname = request.form['lname']
+        email = request.form['email']
+        mobile_number = request.form['mobile_number']
+        s_email = request.form['second_email']
+        s_mobile_number = request.form['second_mobile_number']
 
-    new_contact = User_contacts(user_base_id = current_user.id,contact_fname = fname, contact_lname = lname, contact_email=email, contact_mobile_number=mobile_number, contact_second_email=s_email,contact_second_mobile_number=s_mobile_number)
-    db.add(new_contact)
-    db.commit()
+        new_contact = User_contacts(user_base_id = current_user.id,contact_fname = fname, contact_lname = lname, contact_email=email, contact_mobile_number=mobile_number, contact_second_email=s_email,contact_second_mobile_number=s_mobile_number)
+        db.add(new_contact)
+        db.commit()
 
-    session['sel_feature'] = ""
-    session['Music_filename'] = ""
-    session['music_thumbnail_url'] = ""
-    session['command_in_progress']=False
-    return render_template('home.html',fname=current_user.fname)
+        session['sel_feature'] = ""
+        session['Music_filename'] = ""
+        session['music_thumbnail_url'] = ""
+        session['command_in_progress']=False
+        return render_template('home.html',fname=current_user.fname,getWelcome_msg="false")
 
 @app.route("/getfeature_name",methods = ['GET'])
 def getfeature_name():

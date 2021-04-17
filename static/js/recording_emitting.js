@@ -15,24 +15,11 @@ var stage = 0;
 var current_feature = "";
 
 
-// if (window.performance) {
-//     console.info("window.performance works fine on this browser");
-// }
-// console.info(performance.navigation.type);
-
-if (performance.navigation.type == performance.navigation.TYPE_RELOAD) {
-    console.info( "This page is reloaded" );
-    callWelcomeMessage();
-    
-} 
-
-else{
-    
-    console.info( "This page is loaded");
-    callWelcomeMessage();
+window.onload = function(){
+    callWelcomeMessage_and_start();
 }
 
-function callWelcomeMessage(){
+function callWelcomeMessage_and_start(){
 
     welcomeMessage = document.getElementById('default-messages'); 
     
@@ -41,24 +28,38 @@ function callWelcomeMessage(){
     xhttp.open('POST', encodeURI('http://127.0.0.1:5000/getWelcomeMessage'));
     xhttp.setRequestHeader('Content-Type', 'application/json');
     xhttp.responseType = 'blob';
-    xhttp.onload = function(evt) {
-        var blob = new Blob([xhttp.response], {type: 'audio/wav'});
-        console.log(blob);
-        var objectUrl = URL.createObjectURL(blob);
-        welcomeMessage.src = objectUrl;
-        // Release resource when it's loaded
-        welcomeMessage.onload = function(evt) {
-            URL.revokeObjectURL(objectUrl);     
-        };
+    if(document.getElementById('getWeclome_msg').innerHTML == "true")
+    {
+        xhttp.onload = function(evt) {
+            var blob = new Blob([xhttp.response], {type: 'audio/wav'});
+            
+            var objectUrl = URL.createObjectURL(blob);
+            welcomeMessage.src = objectUrl;
+            // Release resource when it's loaded
+            welcomeMessage.onload = function(evt) {
+                URL.revokeObjectURL(objectUrl);     
+            };
 
-        welcomeMessage.onended = function(evt) {
-            recordMode(1500);
+            welcomeMessage.onended = function(evt) {
+                recordMode(1500);
+            };
+                    
+            welcomeMessage.load();
+            var promise = welcomeMessage.play(); 
+
+            if (promise !== undefined) {
+                promise.then(_ => {
+
+                }).catch(error => {
+                    recordMode(1500);
+                });
+            }
         };
-        
-        welcomeMessage.load();
-        welcomeMessage.play();  
-    };
-    xhttp.send();
+        xhttp.send();
+    }
+    else{
+        recordMode(1500);
+    }
 }
 
 function ListeningMode() {

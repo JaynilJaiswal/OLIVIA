@@ -115,7 +115,8 @@
     <h1>Hello {{fname}}!</h1>
     <div id="mic-box" onclick="ListeningMode()"></div>
     <audio id="output_voice" style="display:none;" autoplay></audio>
-    <audio id ="default-messages" style="display:none;" controls autoplay></audio>
+    <audio id ="default-messages" style="display:none;" controls autoplay ></audio>
+    <h1 id="getWeclome_msg" style="display:none;">{{getWelcome_msg}}</h1>
     <br/><br/>
     {% if current_user.is_authenticated %}
     <a href="{{ url_for('auth.logout') }}" style="right:10%;">
@@ -123,31 +124,28 @@
     </a>
     {% endif %}
     <div id="contacts-modal" class="modal">
-        <form class="modal-content animate" action="/add_contacts" method="POST" enctype="multipart/form-data">
+        <form class="modal-content animate" action="{{ url_for('add_contacts')}}" method='POST'>
             <span onclick="document.getElementById('contacts-modal').style.display = 'none';" class="close">&times;</span><br/><br/><br/><br/>
-            <div class="imgcontainer">
-                <img src="../static/images/avatar.png" alt="Avatar" class="avatar">
-            </div>
             <div>
                 <label for="fname"><b>Firstname</b></label>
-                <input type="text" placeholder="firstname" name="fname" required>
+                <input type="text" placeholder="firstname" name="fname" id ="fname"required>
 
                 <label for="lname"><b>Lastname</b></label>
-                <input type="text" placeholder="lastname" name="lname" >
+                <input type="text" placeholder="lastname" name="lname" id="lname">
 
                 <label for="email"><b>Primary email</b></label>
-                <input type="text" placeholder="email" name="email" required>
+                <input type="text" placeholder="email" name="email" id ="email" required>
 
                 <label for="mobile_number"><b>Primary mobile number</b></label>
-                <input type="text" placeholder="mobile number" name="mobile_number" required>
+                <input type="text" placeholder="mobile number" name="mobile_number" id="mobile_number" required>
 
                 <label for="second_email"><b>Secondary email</b></label>
-                <input type="text" placeholder="email" name="second_email" >
+                <input type="text" placeholder="email" name="second_email" id="second_email">
 
                 <label for="second_mobile_number"><b>Secondary mobile number</b></label>
-                <input type="text" placeholder="mobile number" name="second_mobile_number" ><br/>
+                <input type="text" placeholder="mobile number" name="second_mobile_number" id="second_mobile_number" ><br/>
                 
-                <center><button type="submit" style="width:100px;">Add Contact</button></center>
+                <center><input type="submit" style="width:100px;">Add Contact</input></center>
             </div>
         </form>
     </div>
