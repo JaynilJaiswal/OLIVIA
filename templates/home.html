@@ -122,6 +122,35 @@
         <h1>Logout</h1>
     </a>
     {% endif %}
+    <div id="contacts-modal" class="modal">
+        <form class="modal-content animate" action="/add_contacts" method="POST" enctype="multipart/form-data">
+            <span onclick="document.getElementById('contacts-modal').style.display = 'none';" class="close">&times;</span><br/><br/><br/><br/>
+            <div class="imgcontainer">
+                <img src="../static/images/avatar.png" alt="Avatar" class="avatar">
+            </div>
+            <div>
+                <label for="fname"><b>Firstname</b></label>
+                <input type="text" placeholder="firstname" name="fname" required>
+
+                <label for="lname"><b>Lastname</b></label>
+                <input type="text" placeholder="lastname" name="lname" >
+
+                <label for="email"><b>Primary email</b></label>
+                <input type="text" placeholder="email" name="email" required>
+
+                <label for="mobile_number"><b>Primary mobile number</b></label>
+                <input type="text" placeholder="mobile number" name="mobile_number" required>
+
+                <label for="second_email"><b>Secondary email</b></label>
+                <input type="text" placeholder="email" name="second_email" >
+
+                <label for="second_mobile_number"><b>Secondary mobile number</b></label>
+                <input type="text" placeholder="mobile number" name="second_mobile_number" ><br/>
+                
+                <center><button type="submit" style="width:100px;">Add Contact</button></center>
+            </div>
+        </form>
+    </div>
     <div id="music-modal" class="modal">
         <div class="modal-content animate">
             <span onclick="document.getElementById('music-modal').style.display = 'none';document.getElementById('music-player').pause();" class="close">&times;</span><br/><br/><br/><br/>

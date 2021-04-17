@@ -13,7 +13,26 @@ var interrupt = "no";
 feature_just_selected = "";
 var stage = 0;
 var current_feature = "";
-window.onload = function(){
+
+
+// if (window.performance) {
+//     console.info("window.performance works fine on this browser");
+// }
+// console.info(performance.navigation.type);
+
+if (performance.navigation.type == performance.navigation.TYPE_RELOAD) {
+    console.info( "This page is reloaded" );
+    callWelcomeMessage();
+    
+} 
+
+else{
+    
+    console.info( "This page is loaded");
+    callWelcomeMessage();
+}
+
+function callWelcomeMessage(){
 
     welcomeMessage = document.getElementById('default-messages'); 
     
@@ -24,16 +43,18 @@ window.onload = function(){
     xhttp.responseType = 'blob';
     xhttp.onload = function(evt) {
         var blob = new Blob([xhttp.response], {type: 'audio/wav'});
+        console.log(blob);
         var objectUrl = URL.createObjectURL(blob);
-    
         welcomeMessage.src = objectUrl;
         // Release resource when it's loaded
         welcomeMessage.onload = function(evt) {
             URL.revokeObjectURL(objectUrl);     
         };
+
         welcomeMessage.onended = function(evt) {
             recordMode(1500);
         };
+        
         welcomeMessage.load();
         welcomeMessage.play();  
     };
@@ -43,15 +64,6 @@ window.onload = function(){
 function ListeningMode() {
     interrupt = "yes";
     document.getElementById("mic-box").style.pointerEvents = "none";
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState==4){
-            document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
-            justRecordMode(10000);
-        }
-    };
-    xhttp.open("POST", "http://127.0.0.1:5000/set_command", false);
-    xhttp.send();
 }
 
 function ProcessMode() {
@@ -175,6 +187,18 @@ function additional_request(feature_just_selected,duration_sleep)
 
             //display modal
         }
+        else if (feature_just_selected[i] == "email-contact-not-found"){
+            document.getElementById('contacts-modal').style.display = "block";
+            console.log("music feature");
+        }
+        else if (feature_just_selected[i] == "email-contact-empty"){
+            document.getElementById('contacts-modal').style.display = "block";
+            console.log("music feature");
+        }
+        else if (feature_just_selected[i] == "email-email-not-found"){
+            document.getElementById('contacts-modal').style.display = "block";
+            console.log("music feature");
+        }
 
         else if (feature_just_selected[i] == "email")
         {
@@ -194,7 +218,7 @@ function additional_request(feature_just_selected,duration_sleep)
             console.log("email 2");
             document.getElementById("mic-box").style.pointerEvents = "none";
             document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
-            justRecordMode(30000);
+            justRecordMode(10000);
         }
     }
 
@@ -274,7 +298,20 @@ function recordMode(time) {
 
             gumStream.getAudioTracks()[0].stop();
             // interrupt = "no";
-            rec.exportWAV(uploadWAVFile);
+            if(interrupt=="no"){
+                rec.exportWAV(uploadWAVFile);
+            }
+            else{
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState==4){
+                        document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
+                        justRecordMode(10000);
+                    }
+                };
+                xhttp.open("POST", "http://127.0.0.1:5000/set_command", false);
+                xhttp.send();
+            }
 
             console.log("Recording done")
 
@@ -339,6 +376,9 @@ function uploadWAVFile(blob) {
                     recordMode(10000); 
                 }
                 else{
+                    if (JSON.parse(xhr.responseText)['error']=="YES"){
+                        reset();
+                    }
                     recordMode(1500);
                 }
             }

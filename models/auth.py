@@ -3,7 +3,8 @@ import os
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models.user import User, db
+from models.user import User, db, User_contacts
+from flask_login import login_required, current_user, login_user, logout_user, login_required
 from email_validator import validate_email, EmailNotValidError
 import shutil
 

@@ -15,7 +15,7 @@ def get_contact_info(db,User_contacts,user_base_id, person_name):
     name_similarity = [[0,0,0,0]]*len(userId_contacts_name_email)
 
     for i,el in enumerate(userId_contacts_name_email):
-        name_similarity[i] = [jarowinkler.similarity(person_name, el[0]),el[0],el[1],el[2]]
+        name_similarity[i] = [jarowinkler.similarity(person_name.lower(), el[0].strip().lower()),el[0],el[1],el[2]]
 
     best_matched_contact = sorted(name_similarity, key=lambda x: x[0])[-1]
 

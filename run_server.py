@@ -36,9 +36,9 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email
 
-STT_href = "http://fcb84aa011dd.ngrok.io/"
-TTS_href = "http://1873a590dfce.ngrok.io/"
-NLU_href = "http://043cbcf13d8c.ngrok.io/"
+STT_href = "http://6e8ef08e924f.ngrok.io/"
+TTS_href = "http://231f780656ff.ngrok.io/"
+NLU_href = "http://4c3226679a19.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -121,12 +121,12 @@ def select_feature(name,user_data,query):
         [score, fullName, email, number] = get_contact_info(db,User_contacts,current_user.id, contact_name)
 
         if score == 0:
-            return ["No match found for sepcified person in your contacts list.","email"]
+            return ["No match found for specified person in your contacts list. Would you like to add new person?","email-contact-not-found"]
         elif score == -1:
-            return ["Your contacts list is empty.","email"]
+            return ["Your contacts list is empty. Would you like to add a person?","email-contact-empty"]
 
         if email == "None":
-            return ["Contact details of the person doesn't contain email address. Please add it.","email"]
+            return ["Contact details of the person doesn't contain email address. Please add it.","email-email-not-found"]
 
         session["email-address"] = email
         session["email-fullname"] = fullName
@@ -170,7 +170,7 @@ def get_associated_text(query,feature):
         if "music" in query:
             return query.split("music")[0]
         else:
-            return ""
+            return query
     elif feature == 'email':
         # tagged = nlp(query)
         # return [e.text for e in text.ents if e.label_=="PERSON"]
@@ -457,11 +457,11 @@ def process():
                     librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
                     try:
                         backend_pipeline(filename,session['user_data'])
-                        return {"continue":"NO","listen":"NO"}
+                        return {"continue":"NO","listen":"NO","error":"NO"}
                     except:
                         session['command_in_progress']=False
                         print("Exception in backend_pipeline")
-                        return {"continue":"YES","listen":"NO"}
+                        return {"continue":"YES","listen":"NO","error":"YES"}
 
                     # return {"continue":"NO","listen":"NO"}
                 else:
@@ -489,6 +489,25 @@ def fetch_output_audio():
             if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
                 os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
             return "output file removed"
+        
+@app.route('/add_contacts',methods=['POST'])
+def add_contacts():
+    fname = request.form.get('fname')
+    lname = request.form.get('lname')
+    email = request.form.get('email')
+    mobile_number = request.form.get('mobile_number')
+    s_email = request.form.get('second_email')
+    s_mobile_number = request.form.get('second_mobile_number')
+
+    new_contact = User_contacts(user_base_id = current_user.id,contact_fname = fname, contact_lname = lname, contact_email=email, contact_mobile_number=mobile_number, contact_second_email=s_email,contact_second_mobile_number=s_mobile_number)
+    db.add(new_contact)
+    db.commit()
+
+    session['sel_feature'] = ""
+    session['Music_filename'] = ""
+    session['music_thumbnail_url'] = ""
+    session['command_in_progress']=False
+    return render_template('home.html',fname=current_user.fname)
 
 @app.route("/getfeature_name",methods = ['GET'])
 def getfeature_name():
