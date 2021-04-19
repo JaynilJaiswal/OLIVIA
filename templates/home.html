@@ -124,32 +124,32 @@
     </a>
     {% endif %}
     <div id="contacts-modal" class="modal">
-        <form class="modal-content animate" action="{{ url_for('add_contacts')}}" method='POST'>
-            <span onclick="document.getElementById('contacts-modal').style.display = 'none';interrupt = 'no'; recordMode(1500);" class="close">&times;</span><br/><br/><br/><br/>
-            
-            <h1>Add To Contacts</h1>
-            <div>
-                <label for="fname"><b>Firstname</b></label>
-                <input type="text" placeholder="firstname" name="fname" id ="fname"required>
-
-                <label for="lname"><b>Lastname</b></label>
-                <input type="text" placeholder="lastname" name="lname" id="lname">
-
-                <label for="email"><b>Primary email</b></label>
-                <input type="text" placeholder="email" name="email" id ="email" required>
-
-                <label for="mobile_number"><b>Primary mobile number</b></label>
-                <input type="text" placeholder="mobile number" name="mobile_number" id="mobile_number" required>
-
-                <label for="second_email"><b>Secondary email</b></label>
-                <input type="text" placeholder="email" name="second_email" id="second_email">
-
-                <label for="second_mobile_number"><b>Secondary mobile number</b></label>
-                <input type="text" placeholder="mobile number" name="second_mobile_number" id="second_mobile_number" ><br/>
+        <div class="modal-content animate">
+            <form action="{{ url_for('add_contacts')}}" method='POST'>
+                <span onclick="document.getElementById('contacts-modal').style.display = 'none';interrupt = 'no';reset(); recordMode(1500);" class="close">&times;</span><br/><br/><br/><br/>
                 
-                <center><input type="submit" onclick="interrupt = 'no'; recordMode(1500);" style="width:100px;"></input></center>
-            </div>
-        </form>
+                <h1>Add To Contacts</h1>
+                    <label for="fname"><b>Firstname</b></label>
+                    <input type="text" placeholder="firstname" name="fname" id ="fname"required>
+                    <br>
+                    <label for="lname"><b>Lastname</b></label>
+                    <input type="text" placeholder="lastname" name="lname" id="lname">
+                    <br>
+                    <label for="email"><b>Primary email</b></label>
+                    <input type="text" placeholder="email" name="email" id ="email" required>
+                    <br>
+                    <label for="mobile_number"><b>Primary mobile number</b></label>
+                    <input type="text" placeholder="mobile number" name="mobile_number" id="mobile_number" required>
+                    <br>
+                    <label for="second_email"><b>Secondary email</b></label>
+                    <input type="text" placeholder="email" name="second_email" id="second_email">
+                    <br>
+                    <label for="second_mobile_number"><b>Secondary mobile number</b></label>
+                    <input type="text" placeholder="mobile number" name="second_mobile_number" id="second_mobile_number" ><br/>
+                    <br>
+                    <center><input type="submit" onclick="interrupt = 'no'; recordMode(1500);" style="width:100px;"></input></center>
+            </form>
+        </div>
     </div>
     <div id="music-modal" class="modal">
         <div class="modal-content animate">
