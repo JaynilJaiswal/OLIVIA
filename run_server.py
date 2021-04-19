@@ -36,9 +36,9 @@ from utilities.featureWordExactMatch import exactMatchingWords
 from features.music import getMusicDetails, getMusicFile_key
 from features.email import send_email
 
-STT_href = "http://deb42656a152.ngrok.io/"
-TTS_href = "http://76aa237a2782.ngrok.io/"
-NLU_href = "http://0ef90214baf5.ngrok.io/"
+STT_href = "http://4de0b5cef7c1.ngrok.io/"
+TTS_href = "http://91d6b7459178.ngrok.io/"
+NLU_href = "http://c782716fa08c.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"

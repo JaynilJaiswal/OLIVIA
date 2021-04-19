@@ -1,6 +1,6 @@
 # auth.py
 import os
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, session, request, flash
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from models.user import User, db, User_contacts
@@ -44,6 +44,7 @@ def login_post():
         # if the above check passes, then we know the user has the right credentials
         login_user(user, remember=remember)
         # flash('Logged in successfully!')
+        session['add_contacts_post_requests'] =False
         return redirect(url_for('home'))
 
 
