@@ -147,12 +147,10 @@ def select_feature(name, user_data, query):
 
             counter = 0
             while not driver.is_logged_in():
-            
+
                 counter += 1
                 if counter > 100000:
                     break
-                
-            
 
             if counter < 99999:
                 contact_name = get_associated_text(query, "message")
@@ -162,15 +160,15 @@ def select_feature(name, user_data, query):
                 # update_whatsapp_contact_list
                 db_contacts_available = list(
                     db.query(User_contacts_whatsapp).filter_by(user_base_id=current_user.id))
-                wh_contacts_available=driver.get_my_contacts()
+                wh_contacts_available = driver.get_my_contacts()
 
-                db_contacts_tolist=[[el.contact_name, el.contact_id]
-                    for el in db_contacts_available]
-                wh_contacts_tolist= [[el.name, el.id]
-                    for el in wh_contacts_available]
+                db_contacts_tolist = [[el.contact_name, el.contact_id]
+                                      for el in db_contacts_available]
+                wh_contacts_tolist = [[el.name, el.id]
+                                      for el in wh_contacts_available]
 
                 if len(db_contacts_tolist) < len(wh_contacts_tolist):
-                    not_available_contacts= [el for el in wh_contacts_tolist if not any(
+                    not_available_contacts = [el for el in wh_contacts_tolist if not any(
                         [el[0] == k[0] for k in db_contacts_tolist])]
                     for el in not_available_contacts:
                         db.add(User_contacts_whatsapp(
@@ -178,34 +176,34 @@ def select_feature(name, user_data, query):
                     db.commit()
 
                 # get contact info
-                [score, fullName, id]= get_contact_whatsapp_info(
+                [score, fullName, id] = get_contact_whatsapp_info(
                     db, User_contacts_whatsapp, current_user.id, contact_name)
 
                 if score == 0 or score == -1:
                     return ["No match found for specified person or group in your contacts list. Please update your phone contacts for whatsapp.", "message-contact-not-found"]
 
-                fullname=" ".join([re.sub(r'\W+', '', el)
-                                    for el in fullname.split(" ")]).replace("  ", " ")
+                fullname = " ".join([re.sub(r'\W+', '', el)
+                                     for el in fullname.split(" ")]).replace("  ", " ")
 
-                session['message-fullName']=fullname
-                session['message-id']=id
+                session['message-fullName'] = fullname
+                session['message-id'] = id
                 session['driver'] = driver
 
                 return ["Logged into WhatsApp successfully. Please convey you message for " + fullname + ".", "message"]
 
             else:
-                driver=WhatsAPIDriver(username = current_user.uname)
-                session['QR_code_path']=driver.get_qr()
-                session['qr_start_time']=time.time()
+                driver = WhatsAPIDriver(username=current_user.uname)
+                session['QR_code_path'] = driver.get_qr()
+                session['qr_start_time'] = time.time()
                 session['driver'] = driver
-                session['message-qr-code-query'] = query 
+                session['message-qr-code-query'] = query
                 return ["Please scan the QR code to log into Whatsapp web.", "message-scan-qr"]
 
         else:
-            driver=WhatsAPIDriver(username = current_user.uname)
-            session['qr_start_time']=time.time()
+            driver = WhatsAPIDriver(username=current_user.uname)
+            session['qr_start_time'] = time.time()
             session['driver'] = driver
-            session['message-qr-code-query'] = query 
+            session['message-qr-code-query'] = query
             return ["Please scan the QR code to log into Whatsapp web.", "message-scan-qr"]
 
     if name == "alarm reminder":
@@ -271,12 +269,13 @@ def get_associated_text(query, feature):
 def iterative_running_feature(filename, stage, user_data, feature_name):
     if feature_name == "message-scan-qr":
         if stage == 1:
-            session['driver']._profile_path=os.getcwd()+base_whatsapp_cred_dir + \
+            session['driver']._profile_path = os.getcwd()+base_whatsapp_cred_dir + \
                 current_user.uname+"/profile.default"
             session['driver'].save_firefox_profile()
 
             ## getting contact info for the query
-            contact_name = get_associated_text(session['message-qr-code-query'], "message")
+            contact_name = get_associated_text(
+                session['message-qr-code-query'], "message")
 
             if contact_name == "":
                 return ["No match found for specified person or group in your contacts list. Please update your contacts for whatsapp.", "message-contact-not-found"]
@@ -284,15 +283,15 @@ def iterative_running_feature(filename, stage, user_data, feature_name):
             # update_whatsapp_contact_list
             db_contacts_available = list(
                 db.query(User_contacts_whatsapp).filter_by(user_base_id=current_user.id))
-            wh_contacts_available=session['driver'].get_my_contacts()
+            wh_contacts_available = session['driver'].get_my_contacts()
 
-            db_contacts_tolist=[[el.contact_name, el.contact_id]
-                for el in db_contacts_available]
-            wh_contacts_tolist= [[el.name, el.id]
-                for el in wh_contacts_available]
+            db_contacts_tolist = [[el.contact_name, el.contact_id]
+                                  for el in db_contacts_available]
+            wh_contacts_tolist = [[el.name, el.id]
+                                  for el in wh_contacts_available]
 
             if len(db_contacts_tolist) < len(wh_contacts_tolist):
-                not_available_contacts= [el for el in wh_contacts_tolist if not any(
+                not_available_contacts = [el for el in wh_contacts_tolist if not any(
                     [el[0] == k[0] for k in db_contacts_tolist])]
                 for el in not_available_contacts:
                     db.add(User_contacts_whatsapp(
@@ -300,17 +299,17 @@ def iterative_running_feature(filename, stage, user_data, feature_name):
                 db.commit()
 
             # get contact info
-            [score, fullName, id]= get_contact_whatsapp_info(
+            [score, fullName, id] = get_contact_whatsapp_info(
                 db, User_contacts_whatsapp, current_user.id, contact_name)
 
             if score == 0 or score == -1:
                 return ["No match found for specified person or group in your contacts list. Please update your phone contacts for whatsapp.", "message-contact-not-found"]
 
-            fullname=" ".join([re.sub(r'\W+', '', el)
-                                for el in fullname.split(" ")]).replace("  ", " ")
+            fullname = " ".join([re.sub(r'\W+', '', el)
+                                 for el in fullname.split(" ")]).replace("  ", " ")
 
-            session['message-fullName']=fullname
-            session['message-id']=id
+            session['message-fullName'] = fullname
+            session['message-id'] = id
 
             return ["Logged into WhatsApp successfully. Please convey you message for " + fullname + ".", "message"]
 
@@ -327,24 +326,25 @@ def iterative_running_feature(filename, stage, user_data, feature_name):
 
             db_com_str = "Content:" + input_str
 
-            session['driver'].send_message_to_id(session['message-id'],input_str)
+            session['driver'].send_message_to_id(
+                session['message-id'], input_str)
 
             output = "Message sent successfully."
 
-            new_user_ch = User_command_history(user_base_id =current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
-                                               current_user.uname + "/" + filename, command_feature_selected ="message-content", command_output_text=output)
+            new_user_ch = User_command_history(user_base_id=current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
+                                               current_user.uname + "/" + filename, command_feature_selected="message-content", command_output_text=output)
             db.add(new_user_ch)
             db.commit()
 
             # TTS
-            payload= {"input_str": output}
-            r = requests.get(TTS_href, params =payload).json()
-            bytes_wav= bytes()
+            payload = {"input_str": output}
+            r = requests.get(TTS_href, params=payload).json()
+            bytes_wav = bytes()
 
-            byte_io= io.BytesIO(bytes_wav)
+            byte_io = io.BytesIO(bytes_wav)
             write(byte_io, r['rate'], np.array(r['data'], np.int16))
 
-            output_wav= byte_io.read()
+            output_wav = byte_io.read()
 
             if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'):
                 os.remove(base_out_dir + current_user.uname +
@@ -362,42 +362,43 @@ def iterative_running_feature(filename, stage, user_data, feature_name):
         if stage == 1:
 
             #STT
-            payload={'file': open(
+            payload = {'file': open(
                 base_inp_dir + current_user.uname + "/" + filename, 'rb')}
-            r=requests.post(STT_href, files = payload)
+            r = requests.post(STT_href, files=payload)
             print(r.text)
-            input_str=json.loads(r.text)['text'][0]
+            input_str = json.loads(r.text)['text'][0]
             print(input_str)
 
-            session["email-subject"]=input_str
+            session["email-subject"] = input_str
 
-            db_com_str="subject:" + input_str
+            db_com_str = "subject:" + input_str
 
             if os.path.exists(base_gmail_dir+current_user.uname+"/gmail_token.json"):
-                output="Please inform the message you want to convey to " + \
+                output = "Please inform the message you want to convey to " + \
                     session["email-fullname"]+"."
             else:
-                output="Please inform the message you want to convey to " + \
+                output = "Please inform the message you want to convey to " + \
                     session["email-fullname"] + \
                     ". Also login to Google account via registered email address with OLIVIA."
 
-            new_user_ch=User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir + \
-                                               current_user.uname + "/" + filename, command_feature_selected = "email-subject", command_output_text = output)
+            new_user_ch = User_command_history(user_base_id=current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
+                                               current_user.uname + "/" + filename, command_feature_selected="email-subject", command_output_text=output)
             db.add(new_user_ch)
             db.commit()
 
             # TTS
-            payload={"input_str": output}
-            r=requests.get(TTS_href, params = payload).json()
-            bytes_wav=bytes()
+            payload = {"input_str": output}
+            r = requests.get(TTS_href, params=payload).json()
+            bytes_wav = bytes()
 
-            byte_io=io.BytesIO(bytes_wav)
+            byte_io = io.BytesIO(bytes_wav)
             write(byte_io, r['rate'], np.array(r['data'], np.int16))
 
-            output_wav=byte_io.read()
+            output_wav = byte_io.read()
 
-            if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'): os.remove(
-                base_out_dir + current_user.uname + "/" + 'result.wav')
+            if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'):
+                os.remove(
+                    base_out_dir + current_user.uname + "/" + 'result.wav')
 
             with open(base_out_dir + current_user.uname + "/" + 'result.wav', 'bx') as f:
                 f.write(output_wav)
@@ -424,23 +425,24 @@ def iterative_running_feature(filename, stage, user_data, feature_name):
             os.chdir("filesystem_for_data/gmail_cred/"+current_user.uname)
             print("Input Params: "+session["email-address"]+" " + current_user.email +
                   " "+session["email-subject"]+" "+session["email-body"])
-            output= send_email(session["email-address"], current_user.email, session["email-subject"], session["email-body"])
+            output = send_email(session["email-address"], current_user.email,
+                                session["email-subject"], session["email-body"])
             os.chdir('../../../')
 
-            new_user_ch = User_command_history(user_base_id =current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
-                                               current_user.uname + "/" + filename, command_feature_selected ="email-body", command_output_text=output)
+            new_user_ch = User_command_history(user_base_id=current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
+                                               current_user.uname + "/" + filename, command_feature_selected="email-body", command_output_text=output)
             db.add(new_user_ch)
             db.commit()
 
             # TTS
-            payload= {"input_str": output}
-            r = requests.get(TTS_href, params =payload).json()
-            bytes_wav= bytes()
+            payload = {"input_str": output}
+            r = requests.get(TTS_href, params=payload).json()
+            bytes_wav = bytes()
 
-            byte_io= io.BytesIO(bytes_wav)
+            byte_io = io.BytesIO(bytes_wav)
             write(byte_io, r['rate'], np.array(r['data'], np.int16))
 
-            output_wav= byte_io.read()
+            output_wav = byte_io.read()
 
             if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'):
                 os.remove(base_out_dir + current_user.uname +
@@ -700,12 +702,14 @@ def get_qr_code():
         session['QR_code_path'] = session['driver'].get_qr()
     return send_file(session['QR_code_path'], mimetype="image/png", as_attachment=True, attachment_filename="qr_code_"+current_user.uname+".png")
 
-@app.route('/whatsapp_logged_in',methods=['GET'])
+
+@app.route('/whatsapp_logged_in', methods=['GET'])
 def whatsapp_logged_in():
     if request.method == 'GET':
         if session['driver'].is_logged_in():
             return "1"
         return "0"
+
 
 @app.route('/add_contacts', methods=['POST'])
 def add_contacts():
