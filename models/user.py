@@ -54,22 +54,23 @@ class User_music(UserMixin,db.Model):
     command_selected_music_filepath = db.Column(db.String(150))
     user_base = db.relationship("User",backref=db.backref("user_base_music", uselist=False))
 
-class User_contacts(UserMixin,db.Model):
-    __tablename__ = 'user_contacts'
+class User_contacts_email(UserMixin,db.Model):
+    __tablename__ = 'user_contacts_email'
     id = db.Column(db.Integer, primary_key=True)
     user_base_id = db.Column(db.Integer, db.ForeignKey('user_base.id'))
     contact_time_created = db.Column('dateTime_created', db.DateTime, nullable=False, default=datetime.datetime.utcnow)   
     contact_fname = db.Column(db.String(50))
     contact_lname = db.Column(db.String(50))
     contact_email = db.Column(db.String(50))
-    contact_mobile_number = db.Column(db.String(50))
     contact_second_email = db.Column(db.String(50))
-    contact_second_mobile_number = db.Column(db.String(50))
-    contact_third_email = db.Column(db.String(50))
-    contact_third_mobile_number = db.Column(db.String(50))
-    contact_type = db.Column(db.String(50))
-    contact_relation = db.Column(db.String(50))
-    user_base = db.relationship("User",backref=db.backref("user_base_contacts", uselist=False))
+    user_base = db.relationship("User",backref=db.backref("user_base_contacts_email", uselist=False))
 
     
-
+class User_contacts_whatsapp(UserMixin,db.Model):
+    __tablename__ = 'user_contacts_whatsapp'
+    id = db.Column(db.Integer, primary_key=True)
+    user_base_id = db.Column(db.Integer, db.ForeignKey('user_base.id'))
+    contact_time_created = db.Column('dateTime_created', db.DateTime, nullable=False, default=datetime.datetime.utcnow)   
+    contact_name = db.Column(db.String(80))
+    contact_id = db.Column(db.String(50))
+    user_base = db.relationship("User",backref=db.backref("user_base_contacts_whatsapp", uselist=False))

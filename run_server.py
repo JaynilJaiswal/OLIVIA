@@ -1,50 +1,55 @@
-from flask import Flask,render_template,request,redirect,url_for,session,jsonify,send_file, Blueprint
+from WebWhatsappWrapper.webwhatsapi import WhatsAPIDriver
+from features.email import send_email
+from features.music import getMusicDetails, getMusicFile_key
+from utilities.featureWordExactMatch import exactMatchingWords
+from features.location import getLocation
+from features.weather import getWeather
+from features.date import getDate
+from features.time import getTime
+from Models.generic_sound_classifier.audio_detect import *
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file, Blueprint
 
 import os
 import requests
-from scipy.io.wavfile import read,write
+from scipy.io.wavfile import read, write
 import io
 import json
+import time
+import re
 
 import numpy as np
 import librosa
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 from flask_login import LoginManager
-from models.user import db, User,User_location ,User_command_history, User_music, User_contacts
+from models.user import db, User, User_location, User_command_history, User_music, User_contacts_email, User_contacts_whatsapp
 from flask_login import login_required, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+
 # blueprint for auth routes in our app
+
 from models.auth import auth as auth_blueprint
-from findContactInfo import get_contact_info
+from findContactInfo import get_contact_email_info
 import shutil
 from os import path
 import spacy
-nlp =spacy.load('en_core_web_sm')
+nlp = spacy.load('en_core_web_sm')
 
 db.create_all()
 
-geolocator = Nominatim(user_agent="geoapiExercises") 
+geolocator = Nominatim(user_agent="geoapiExercises")
 
-from Models.generic_sound_classifier.audio_detect import *
 
-from features.time import getTime
-from features.date import getDate
-from features.weather import getWeather
-from features.location import getLocation
-from utilities.featureWordExactMatch import exactMatchingWords
-from features.music import getMusicDetails, getMusicFile_key
-from features.email import send_email
-
-STT_href = "http://4de0b5cef7c1.ngrok.io/"
-TTS_href = "http://91d6b7459178.ngrok.io/"
-NLU_href = "http://c782716fa08c.ngrok.io/"
+STT_href = "http://168130f63053.ngrok.io/"
+TTS_href = "http://e4202f1c3c77.ngrok.io/"
+NLU_href = "http://a9fb721ba397.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
 base_out_dir = "filesystem_for_data/Audio_output_files/"
 base_music_dir = "filesystem_for_data/Music_dir/"
 base_gmail_dir = "filesystem_for_data/gmail_cred/"
+base_whatsapp_cred_dir = "filesystem_for_data/Whatsapp_Cred/"
 
 base_default_dir = "default_messages/"
 
@@ -55,14 +60,14 @@ app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlite.db'
 
 app.secret_key = '9OLWxND4o83j4K4iuopO'
-data=[]
+data = []
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
 
 app.register_blueprint(auth_blueprint)
 
-run_server = Blueprint("run_server",__name__)
+run_server = Blueprint("run_server", __name__)
 app.register_blueprint(run_server)
 
 
@@ -70,92 +75,159 @@ app.register_blueprint(run_server)
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
 # FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
 
-def select_feature(name,user_data,query):
+def select_feature(name, user_data, query):
     # global Music_filename
     # global music_thumbnail_url
 
     session['Music_filename'] = ""
     session['music_thumbnail_url'] = ""
 
-    if name=="time":
-        return [getTime(user_data["timezone"]),"time"]
+    if name == "time":
+        return [getTime(user_data["timezone"]), "time"]
 
-    if name=='date':
-        return [getDate(user_data["timezone"]),"date"]
+    if name == 'date':
+        return [getDate(user_data["timezone"]), "date"]
 
-    if name=='weather':
+    if name == 'weather':
         if "city" in user_data['address']:
-            return [getWeather(user_data['address']['city']),"weather"]
+            return [getWeather(user_data['address']['city']), "weather"]
         elif "state_district" in user_data['address']:
-            return [getWeather(user_data['address']['state_district']),"weather"]
+            return [getWeather(user_data['address']['state_district']), "weather"]
         else:
-            return ["Unable to find location to get weather related information.","weather"]
+            return ["Unable to find location to get weather related information.", "weather"]
 
-    if name=='location':
-        return [getLocation(user_data['address']),"location"]
+    if name == 'location':
+        return [getLocation(user_data['address']), "location"]
 
     if name == 'music':
-        song_detail = get_associated_text(query,'music')
+        song_detail = get_associated_text(query, 'music')
+        if song_detail == "":
+            return ["Music not found, please give a better description.", "music"]
 
-        [id_list,name_list,explicit_list,url] = getMusicDetails(song_detail)
+        [id_list, name_list, explicit_list, url] = getMusicDetails(song_detail)
         session['music_thumbnail_url'] = url[0]
 
-        if id_list == 0: 
-            return ["Music not found, please give a better description.","music"]
-        
+        if id_list == 0:
+            return ["Music not found, please give a better description.", "music"]
+
         if explicit_list[0] == "True":
-            return ["Music contains explicit words.","music"]
-            
-        if path.exists(base_music_dir+ name_list[0] +".m4a"):
-            session['Music_filename'] = name_list[0]+".m4a" 
-            return ["Streaming "+name_list[0]+" now!",'music']   
+            return ["Music contains explicit words.", "music"]
 
-        session['Music_filename'] = name_list[0]+".m4a" 
-        music_stream = getMusicFile_key(id_list[0],name_list[0])
-        shutil.move(session['Music_filename'], base_music_dir + session['Music_filename'])
-        return [music_stream,"music"]
+        if path.exists(base_music_dir + name_list[0] + ".m4a"):
+            session['Music_filename'] = name_list[0]+".m4a"
+            return ["Streaming "+name_list[0]+" now!", 'music']
 
+        session['Music_filename'] = name_list[0]+".m4a"
+        music_stream = getMusicFile_key(id_list[0], name_list[0])
+        shutil.move(session['Music_filename'],
+                    base_music_dir + session['Music_filename'])
+        return [music_stream, "music"]
 
-    if name =="email":
-        contact_name = get_associated_text(query,'email')
-        [score, fullName, email, number] = get_contact_info(db,User_contacts,current_user.id, contact_name)
+    if name == "email":
+        contact_name = get_associated_text(query, 'email')
+        if contact_name == "":
+            return ["No match found for specified person or group in your contacts list. Would you like to add new person?", "email-contact-not-found"]
+        [score, fullName, email] = get_contact_email_info(
+            db, User_contacts_email, current_user.id, contact_name)
 
         if score == 0:
-            return ["No match found for specified person in your contacts list. Would you like to add new person?","email-contact-not-found"]
+            return ["No match found for specified person or group in your contacts list. Would you like to add new person?", "email-contact-not-found"]
         elif score == -1:
-            return ["Your contacts list is empty. Would you like to add a person?","email-contact-empty"]
-
-        if email == "None":
-            return ["Contact details of the person doesn't contain email address. Please add it.","email-email-not-found"]
+            return ["Your contacts list is empty. Would you like to add a person?", "email-contact-not-found"]
 
         session["email-address"] = email
         session["email-fullname"] = fullName
 
-        return ["Initiating email to "+fullName+". Please mention the subject of the email.","email"]
+        return ["Initiating email to "+fullName+". Please mention the subject of the email.", "email"]
 
-    if name =="alarm reminder":
-        return ["Feature to be added soon.","alarm reminder"]
+    if name == "message":
+        if path.exists(base_whatsapp_cred_dir+current_user.uname+"/profile.default/user.js") and path.exists(base_whatsapp_cred_dir+current_user.uname+"/profile.default/localStorage.json"):
+            driver = WhatsAPIDriver(username=current_user.uname, profile=(
+                base_whatsapp_cred_dir+current_user.uname+"/profile.default")[1:])
 
-    if name =="schedule":
-        return ["Feature to be added soon.","schedule"]
+            counter = 0
+            while not driver.is_logged_in():
+            
+                counter += 1
+                if counter > 100000:
+                    break
+                
+            
 
-    if name =="find information":
-        return ["Feature to be added soon.","find information"]
+            if counter < 99999:
+                contact_name = get_associated_text(query, "message")
+                if contact_name == "":
+                    return ["No match found for specified person or group in your contacts list. Please update your contacts for whatsapp.", "message-contact-not-found"]
 
-    if name =="message":
-        return ["Feature to be added soon.","message"]
+                # update_whatsapp_contact_list
+                db_contacts_available = list(
+                    db.query(User_contacts_whatsapp).filter_by(user_base_id=current_user.id))
+                wh_contacts_available=driver.get_my_contacts()
 
-    if name =="call":
-        return ["Feature to be added soon.","call"]
+                db_contacts_tolist=[[el.contact_name, el.contact_id]
+                    for el in db_contacts_available]
+                wh_contacts_tolist= [[el.name, el.id]
+                    for el in wh_contacts_available]
 
-    if name =="features":
-        return ["Feature to be added soon.","features"]
+                if len(db_contacts_tolist) < len(wh_contacts_tolist):
+                    not_available_contacts= [el for el in wh_contacts_tolist if not any(
+                        [el[0] == k[0] for k in db_contacts_tolist])]
+                    for el in not_available_contacts:
+                        db.add(User_contacts_whatsapp(
+                            user_base_id=current_user.id, contact_name=el.name, contact_id=el.id))
+                    db.commit()
 
-    if name =="translation":
-        return ["Feature to be added soon.","translation"]
+                # get contact info
+                [score, fullName, id]= get_contact_whatsapp_info(
+                    db, User_contacts_whatsapp, current_user.id, contact_name)
+
+                if score == 0 or score == -1:
+                    return ["No match found for specified person or group in your contacts list. Please update your phone contacts for whatsapp.", "message-contact-not-found"]
+
+                fullname=" ".join([re.sub(r'\W+', '', el)
+                                    for el in fullname.split(" ")]).replace("  ", " ")
+
+                session['message-fullName']=fullname
+                session['message-id']=id
+                session['driver'] = driver
+
+                return ["Logged into WhatsApp successfully. Please convey you message for " + fullname + ".", "message"]
+
+            else:
+                driver=WhatsAPIDriver(username = current_user.uname)
+                session['QR_code_path']=driver.get_qr()
+                session['qr_start_time']=time.time()
+                session['driver'] = driver
+                session['message-qr-code-query'] = query 
+                return ["Please scan the QR code to log into Whatsapp web.", "message-scan-qr"]
+
+        else:
+            driver=WhatsAPIDriver(username = current_user.uname)
+            session['qr_start_time']=time.time()
+            session['driver'] = driver
+            session['message-qr-code-query'] = query 
+            return ["Please scan the QR code to log into Whatsapp web.", "message-scan-qr"]
+
+    if name == "alarm reminder":
+        return ["Feature to be added soon.", "alarm reminder"]
+
+    if name == "schedule":
+        return ["Feature to be added soon.", "schedule"]
+
+    if name == "find information":
+        return ["Feature to be added soon.", "find information"]
+
+    if name == "call":
+        return ["Feature to be added soon.", "call"]
+
+    if name == "features":
+        return ["Feature to be added soon.", "features"]
+
+    if name == "translation":
+        return ["Feature to be added soon.", "translation"]
 
 
-def get_associated_text(query,feature):
+def get_associated_text(query, feature):
     if feature == 'music':
         if "play" in query:
             return query.split("play")[1]
@@ -180,51 +252,154 @@ def get_associated_text(query,feature):
             return query.split("mail")[1]
         else:
             return ""
+    elif feature == 'message':
+        # tagged = nlp(query)
+        # return [e.text for e in text.ents if e.label_=="PERSON"]
+        if "message" in query:
+            return query.split("message")[1]
+        elif "whatsapp" in query:
+            return query.split("whatsapp")[1]
+        elif "chat with" in query:
+            return query.split("chat with")[1]
+        elif "ping" in query:
+            return query.split("ping")[1]
+        else:
+            return ""
     return
 
 
-def iterative_running_feature(filename,stage,user_data,feature_name):
+def iterative_running_feature(filename, stage, user_data, feature_name):
+    if feature_name == "message-scan-qr":
+        if stage == 1:
+            session['driver']._profile_path=os.getcwd()+base_whatsapp_cred_dir + \
+                current_user.uname+"/profile.default"
+            session['driver'].save_firefox_profile()
+
+            ## getting contact info for the query
+            contact_name = get_associated_text(session['message-qr-code-query'], "message")
+
+            if contact_name == "":
+                return ["No match found for specified person or group in your contacts list. Please update your contacts for whatsapp.", "message-contact-not-found"]
+
+            # update_whatsapp_contact_list
+            db_contacts_available = list(
+                db.query(User_contacts_whatsapp).filter_by(user_base_id=current_user.id))
+            wh_contacts_available=session['driver'].get_my_contacts()
+
+            db_contacts_tolist=[[el.contact_name, el.contact_id]
+                for el in db_contacts_available]
+            wh_contacts_tolist= [[el.name, el.id]
+                for el in wh_contacts_available]
+
+            if len(db_contacts_tolist) < len(wh_contacts_tolist):
+                not_available_contacts= [el for el in wh_contacts_tolist if not any(
+                    [el[0] == k[0] for k in db_contacts_tolist])]
+                for el in not_available_contacts:
+                    db.add(User_contacts_whatsapp(
+                        user_base_id=current_user.id, contact_name=el.name, contact_id=el.id))
+                db.commit()
+
+            # get contact info
+            [score, fullName, id]= get_contact_whatsapp_info(
+                db, User_contacts_whatsapp, current_user.id, contact_name)
+
+            if score == 0 or score == -1:
+                return ["No match found for specified person or group in your contacts list. Please update your phone contacts for whatsapp.", "message-contact-not-found"]
+
+            fullname=" ".join([re.sub(r'\W+', '', el)
+                                for el in fullname.split(" ")]).replace("  ", " ")
+
+            session['message-fullName']=fullname
+            session['message-id']=id
+
+            return ["Logged into WhatsApp successfully. Please convey you message for " + fullname + ".", "message"]
+
+    if feature_name == "message":
+        if stage == 2:
+            payload = {'file': open(
+                base_inp_dir + current_user.uname + "/" + filename, 'rb')}
+            r = requests.post(STT_href, files=payload)
+            print(r.text)
+            input_str = json.loads(r.text)['text'][0]
+            print(input_str)
+
+            session["message-content"] = input_str
+
+            db_com_str = "Content:" + input_str
+
+            session['driver'].send_message_to_id(session['message-id'],input_str)
+
+            output = "Message sent successfully."
+
+            new_user_ch = User_command_history(user_base_id =current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
+                                               current_user.uname + "/" + filename, command_feature_selected ="message-content", command_output_text=output)
+            db.add(new_user_ch)
+            db.commit()
+
+            # TTS
+            payload= {"input_str": output}
+            r = requests.get(TTS_href, params =payload).json()
+            bytes_wav= bytes()
+
+            byte_io= io.BytesIO(bytes_wav)
+            write(byte_io, r['rate'], np.array(r['data'], np.int16))
+
+            output_wav= byte_io.read()
+
+            if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'):
+                os.remove(base_out_dir + current_user.uname +
+                          "/" + 'result.wav')
+
+            with open(base_out_dir + current_user.uname + "/" + 'result.wav', 'bx') as f:
+                f.write(output_wav)
+
+            # output_audio_ready = "yes"
+
+            session['sel_feature'] = "message-sent"
+            return "OK"
+
     if feature_name == "email":
         if stage == 1:
-            # global output_audio_ready
-            # global sel_feature
-            
-            # output_audio_ready = "no"
-                
+
             #STT
-            payload={'file':open(base_inp_dir+ current_user.uname + "/" + filename,'rb')}
-            r = requests.post(STT_href,files=payload)
+            payload={'file': open(
+                base_inp_dir + current_user.uname + "/" + filename, 'rb')}
+            r=requests.post(STT_href, files = payload)
             print(r.text)
             input_str=json.loads(r.text)['text'][0]
-            print (input_str)
+            print(input_str)
 
-            session["email-subject"] = input_str
+            session["email-subject"]=input_str
 
-            db_com_str = "subject:" + input_str
+            db_com_str="subject:" + input_str
 
             if os.path.exists(base_gmail_dir+current_user.uname+"/gmail_token.json"):
-                output = "Please inform the message you want to convey to "+session["email-fullname"]+"."
+                output="Please inform the message you want to convey to " + \
+                    session["email-fullname"]+"."
             else:
-                output = "Please inform the message you want to convey to "+session["email-fullname"]+". Also login to Google account via registered email address with OLIVIA."
+                output="Please inform the message you want to convey to " + \
+                    session["email-fullname"] + \
+                    ". Also login to Google account via registered email address with OLIVIA."
 
-            new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + filename, command_feature_selected="email-subject", command_output_text = output)
+            new_user_ch=User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir + \
+                                               current_user.uname + "/" + filename, command_feature_selected = "email-subject", command_output_text = output)
             db.add(new_user_ch)
             db.commit()
 
             # TTS
             payload={"input_str": output}
-            r = requests.get(TTS_href, params=payload).json()
-            bytes_wav = bytes()
+            r=requests.get(TTS_href, params = payload).json()
+            bytes_wav=bytes()
 
-            byte_io = io.BytesIO(bytes_wav)
-            write(byte_io, r['rate'], np.array(r['data'],np.int16))
-            
-            output_wav = byte_io.read() 
-            
-            if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
-                os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
-                
-            with open(base_out_dir+ current_user.uname + "/" + 'result.wav','bx') as f:
+            byte_io=io.BytesIO(bytes_wav)
+            write(byte_io, r['rate'], np.array(r['data'], np.int16))
+
+            output_wav=byte_io.read()
+
+            if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'): os.remove(
+                base_out_dir + current_user.uname + "/" + 'result.wav')
+
+            with open(base_out_dir + current_user.uname + "/" + 'result.wav', 'bx') as f:
                 f.write(output_wav)
 
             # output_audio_ready = "yes"
@@ -233,46 +408,45 @@ def iterative_running_feature(filename,stage,user_data,feature_name):
             return "OK"
 
         elif stage == 2:
-            # global output_audio_ready
-            # global sel_feature
-            
-            # output_audio_ready = "no"
-                
+
             #STT
-            payload={'file':open(base_inp_dir+ current_user.uname + "/" + filename,'rb')}
-            r = requests.post(STT_href,files=payload)
+            payload = {'file': open(
+                base_inp_dir + current_user.uname + "/" + filename, 'rb')}
+            r = requests.post(STT_href, files=payload)
             print(r.text)
-            input_str=json.loads(r.text)['text'][0]
-            print (input_str)
+            input_str = json.loads(r.text)['text'][0]
+            print(input_str)
 
             session["email-body"] = input_str
 
             db_com_str = "Body:" + input_str
 
             os.chdir("filesystem_for_data/gmail_cred/"+current_user.uname)
-            print("Input Params: "+session["email-address"]+" " +current_user.email+" "+session["email-subject"]+" "+session["email-body"])
-            output = send_email(session["email-address"],current_user.email,session["email-subject"],session["email-body"])
+            print("Input Params: "+session["email-address"]+" " + current_user.email +
+                  " "+session["email-subject"]+" "+session["email-body"])
+            output= send_email(session["email-address"], current_user.email, session["email-subject"], session["email-body"])
             os.chdir('../../../')
-                
 
-            new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + filename, command_feature_selected="email-body", command_output_text = output)
+            new_user_ch = User_command_history(user_base_id =current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
+                                               current_user.uname + "/" + filename, command_feature_selected ="email-body", command_output_text=output)
             db.add(new_user_ch)
             db.commit()
 
             # TTS
-            payload={"input_str": output}
-            r = requests.get(TTS_href, params=payload).json()
-            bytes_wav = bytes()
+            payload= {"input_str": output}
+            r = requests.get(TTS_href, params =payload).json()
+            bytes_wav= bytes()
 
-            byte_io = io.BytesIO(bytes_wav)
-            write(byte_io, r['rate'], np.array(r['data'],np.int16))
-            
-            output_wav = byte_io.read() 
-            
-            if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
-                os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
-                
-            with open(base_out_dir+ current_user.uname + "/" + 'result.wav','bx') as f:
+            byte_io= io.BytesIO(bytes_wav)
+            write(byte_io, r['rate'], np.array(r['data'], np.int16))
+
+            output_wav= byte_io.read()
+
+            if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'):
+                os.remove(base_out_dir + current_user.uname +
+                          "/" + 'result.wav')
+
+            with open(base_out_dir + current_user.uname + "/" + 'result.wav', 'bx') as f:
                 f.write(output_wav)
 
             # output_audio_ready = "yes"
@@ -280,28 +454,30 @@ def iterative_running_feature(filename,stage,user_data,feature_name):
             session['sel_feature'] = "email-stage3"
             return "OK"
 
-def backend_pipeline(filename,user_data):
-    
+
+def backend_pipeline(filename, user_data):
+
     # global output_audio_ready
     # global sel_feature
-    
+
     # output_audio_ready = "no"
 
     # f  = request.files['audio_data']
     # with open(base_inp_dir+ current_user.uname + "/" + f.filename,'wb') as audio:
     #     f.save(audio)
-        
+
     #STT
-    payload={'file':open(base_inp_dir+ current_user.uname + "/" + filename,'rb')}
-    r = requests.post(STT_href,files=payload)
+    payload = {'file': open(
+        base_inp_dir + current_user.uname + "/" + filename, 'rb')}
+    r = requests.post(STT_href, files=payload)
     print(r.text)
-    input_str=json.loads(r.text)['text'][0]
-    print (input_str)
+    input_str = json.loads(r.text)['text'][0]
+    print(input_str)
 
     db_com_str = input_str
 
-    #preprocess   
-    text = input_str    
+    #preprocess
+    text = input_str
     if 'olivia' in text:
         text = text.split('olivia')[1].strip()
     if 'alivia' in text:
@@ -325,7 +501,7 @@ def backend_pipeline(filename,user_data):
     #NLU
     ## Checking for exact match
 
-    [token,feature_l] = exactMatchingWords(text)
+    [token, feature_l] = exactMatchingWords(text)
     if token == "single feature selected":
         print("====================================================================")
         print("====================================================================")
@@ -333,7 +509,7 @@ def backend_pipeline(filename,user_data):
         print(str(feature_l))
         print("====================================================================")
         print("\n")
-        input_str = [select_feature(feature_l[0],user_data,text)]
+        input_str = [select_feature(feature_l[0], user_data, text)]
 
     elif token == "multiple features selected":
         print("====================================================================")
@@ -342,11 +518,12 @@ def backend_pipeline(filename,user_data):
         print(str(feature_l))
         print("====================================================================")
         print("\n")
-        
-        input_str = [select_feature(feature_l[i],user_data,text) for i in range(len(feature_l))]
-        
+
+        input_str = [select_feature(feature_l[i], user_data, text)
+                     for i in range(len(feature_l))]
+
     elif token == "no feature tag found":
-        r = requests.get(NLU_href,json={"sentence":text}).json()
+        r = requests.get(NLU_href, json={"sentence": text}).json()
 
         print("Most related feature : "+str(r['Most related feature'][0][0]))
         print("\n")
@@ -355,187 +532,224 @@ def backend_pipeline(filename,user_data):
         print(str(r['Most related feature']))
         print("====================================================================")
         print("\n")
-        
-        input_str = [select_feature(r['Most related feature'][0][0],user_data,text)]
 
-    new_user_ch = User_command_history(user_base_id = current_user.id, command_input_text = db_com_str, command_input_filepath = base_inp_dir+ current_user.uname + "/" + filename, command_feature_selected=input_str[0][1], command_output_text = input_str[0][0])
+        input_str = [select_feature(
+            r['Most related feature'][0][0], user_data, text)]
+
+    new_user_ch = User_command_history(user_base_id=current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
+                                       current_user.uname + "/" + filename, command_feature_selected=input_str[0][1], command_output_text=input_str[0][0])
     db.add(new_user_ch)
     db.commit()
 
-    #TTS        
+    #TTS
     final_input = ""
     for i in range(len(input_str)):
         final_input = final_input + "..." + input_str[i][0]
-    payload={"input_str": final_input}
+    payload = {"input_str": final_input}
     r = requests.get(TTS_href, params=payload).json()
     bytes_wav = bytes()
 
     byte_io = io.BytesIO(bytes_wav)
-    write(byte_io, r['rate'], np.array(r['data'],np.int16))
-    
-    output_wav = byte_io.read() 
-    
-    if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
-        os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
-        
-    with open(base_out_dir+ current_user.uname + "/" + 'result.wav','bx') as f:
+    write(byte_io, r['rate'], np.array(r['data'], np.int16))
+
+    output_wav = byte_io.read()
+
+    if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'):
+        os.remove(base_out_dir + current_user.uname + "/" + 'result.wav')
+
+    with open(base_out_dir + current_user.uname + "/" + 'result.wav', 'bx') as f:
         f.write(output_wav)
 
-    session['sel_feature'] = ", ".join([input_str[i][1] for i in range(len(input_str))])
+    session['sel_feature'] = ", ".join(
+        [input_str[i][1] for i in range(len(input_str))])
 
     return "OK"
 
     # code to validate and add user to database goes here
     # return redirect(url_for('auth.login'))
 
+
 @login_manager.user_loader
 def load_user(user_id):
     # since the user_id is just the primary key of our user table, use it in the query for the user
     return db.query(User).get(int(user_id))
 
-@app.route('/',methods=['GET'])
+
+@app.route('/', methods=['GET'])
 def index():
-    if request.method=='GET':
+    if request.method == 'GET':
         if current_user.is_authenticated:
-            session['add_contacts_post_requests']=False
+            session['add_contacts_post_requests'] = False
             return redirect(url_for('home'))
         else:
             return render_template('index.html')
 
-@app.route('/home',methods=['GET','POST'])
+
+@app.route('/home', methods=['GET', 'POST'])
 @login_required
 def home():
-    if request.method=='GET':
+    if request.method == 'GET':
         session['sel_feature'] = ""
         session['Music_filename'] = ""
         session['music_thumbnail_url'] = ""
-        session['command_in_progress']=False
-        
-        if(session['add_contacts_post_requests']!=True):
-            return render_template('home.html',fname=current_user.fname,getWelcome_msg="true")
-        else:
-            session['add_contacts_post_requests']=False
-            return render_template('home.html',fname=current_user.fname,getWelcome_msg="false")
+        session['command_in_progress'] = False
 
-    if request.method=="POST":
-        user_location =json.loads(request.form['data'])
+        if(session['add_contacts_post_requests'] != True):
+            return render_template('home.html', fname=current_user.fname, getWelcome_msg="true")
+        else:
+            session['add_contacts_post_requests'] = False
+            return render_template('home.html', fname=current_user.fname, getWelcome_msg="false")
+
+    if request.method == "POST":
+        user_location = json.loads(request.form['data'])
 
         tf = TimezoneFinder()
-        user_timezone = tf.timezone_at(lng=user_location['long'],lat=user_location['lat'])
+        user_timezone = tf.timezone_at(
+            lng=user_location['long'], lat=user_location['lat'])
 
-        user_address = geolocator.reverse(str(user_location['lat'])+','+str(user_location['long'])).raw['address']
+        user_address = geolocator.reverse(
+            str(user_location['lat'])+','+str(user_location['long'])).raw['address']
 
         if 'city' in user_address and 'state_district' in user_address:
-            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = user_address['city'], state_district = user_address['state_district'], state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+            new_user_location = User_location(user_base_id=current_user.id, latitude=user_location["lat"], longitude=user_location["long"], timezone=user_timezone, city=user_address[
+                                              'city'], state_district=user_address['state_district'], state=user_address['state'], postcode=user_address['postcode'], country=user_address['country'], country_code=user_address['country_code'])
         elif 'city' not in user_address and 'state_district' in user_address:
-            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = "Not found", state_district = user_address['state_district'], state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+            new_user_location = User_location(user_base_id=current_user.id, latitude=user_location["lat"], longitude=user_location["long"], timezone=user_timezone, city="Not found", state_district=user_address[
+                                              'state_district'], state=user_address['state'], postcode=user_address['postcode'], country=user_address['country'], country_code=user_address['country_code'])
         elif 'city' in user_address and 'state_district' not in user_address:
-            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = user_address['city'], state_district = "Not found", state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
+            new_user_location = User_location(user_base_id=current_user.id, latitude=user_location["lat"], longitude=user_location["long"], timezone=user_timezone, city=user_address[
+                                              'city'], state_district="Not found", state=user_address['state'], postcode=user_address['postcode'], country=user_address['country'], country_code=user_address['country_code'])
         else:
-            new_user_location = User_location(user_base_id = current_user.id, latitude = user_location["lat"], longitude = user_location["long"], timezone = user_timezone, city = "Not found", state_district = "Not found", state = user_address['state'], postcode = user_address['postcode'], country = user_address['country'], country_code = user_address['country_code'])
-        
-        session['user_data']= {'location':user_location,'timezone':user_timezone,'address':user_address}
-        print (session['user_data'])
-        
+            new_user_location = User_location(user_base_id=current_user.id, latitude=user_location["lat"], longitude=user_location["long"], timezone=user_timezone, city="Not found",
+                                              state_district="Not found", state=user_address['state'], postcode=user_address['postcode'], country=user_address['country'], country_code=user_address['country_code'])
+
+        session['user_data'] = {'location': user_location,
+                                'timezone': user_timezone, 'address': user_address}
+        print(session['user_data'])
+
         db.add(new_user_location)
-        db.commit()    
+        db.commit()
 
         db.session.commit()
         return "saved"
 
 
-@app.route('/process',methods=['GET','POST'])
+@app.route('/process', methods=['GET', 'POST'])
 def process():
-    if request.method=='POST':
+    if request.method == 'POST':
         filename = request.files['audio_data'].filename
-        audio,sr = librosa.load(request.files['audio_data'])
+        audio, sr = librosa.load(request.files['audio_data'])
         print(request.form['stage'])
-        if request.form['stage']=='0':
+        if request.form['stage'] == '0':
             labels = audio_classifier.detect(audio)
-            print (len(audio),labels)
+            print(len(audio), labels)
             if "Finger snapping" in labels:
                 session['command_in_progress'] = True
                 print(session['command_in_progress'])
-                return {"continue":"YES","listen":"YES"}
+                return {"continue": "YES", "listen": "YES"}
             else:
                 if session['command_in_progress']:
-                    print(session['command_in_progress'])                    
-                    session['command_in_progress']=False
-                    librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
+                    print(session['command_in_progress'])
+                    session['command_in_progress'] = False
+                    librosa.output.write_wav(
+                        base_inp_dir + current_user.uname + "/" + filename, audio, sr)
                     try:
-                        backend_pipeline(filename,session['user_data'])
-                        return {"continue":"NO","listen":"NO","error":"NO"}
+                        backend_pipeline(filename, session['user_data'])
+                        return {"continue": "NO", "listen": "NO", "error": "NO"}
                     except:
-                        session['command_in_progress']=False
+                        session['command_in_progress'] = False
                         print("Exception in backend_pipeline")
-                        return {"continue":"YES","listen":"NO","error":"YES"}
+                        return {"continue": "YES", "listen": "NO", "error": "YES"}
 
                     # return {"continue":"NO","listen":"NO"}
                 else:
                     print(session['command_in_progress'])
-                    session['command_in_progress']=False
-                    return {"continue":"YES","listen":"NO"}
+                    session['command_in_progress'] = False
+                    return {"continue": "YES", "listen": "NO"}
         else:
             print(request.form['stage'])
-            librosa.output.write_wav(base_inp_dir+ current_user.uname+ "/" + filename,audio,sr)
-            iterative_running_feature(filename,ord(request.form['stage'])-ord('0'),session['user_data'],request.form['feature'])
-            return {"continue":"NO"}
+            librosa.output.write_wav(
+                base_inp_dir + current_user.uname + "/" + filename, audio, sr)
+            iterative_running_feature(filename, ord(
+                request.form['stage'])-ord('0'), session['user_data'], request.form['feature'])
+            return {"continue": "NO"}
 
-@app.route("/set_command",methods = ['POST'])
+
+@app.route("/set_command", methods=['POST'])
 def set_command():
-    session['command_in_progress']=True
+    session['command_in_progress'] = True
     return "OK"
 
 
-@app.route('/fetch_output_audio', methods=['POST','GET'])
+@app.route('/fetch_output_audio', methods=['POST', 'GET'])
 def fetch_output_audio():
-        if request.method=="POST":
-            return send_file(base_out_dir+ current_user.uname + "/" + 'result.wav',mimetype="audio/wav",as_attachment=True,attachment_filename='result.wav')
+    if request.method == "POST":
+        return send_file(base_out_dir + current_user.uname + "/" + 'result.wav', mimetype="audio/wav", as_attachment=True, attachment_filename='result.wav')
 
-        if request.method=="GET":
-            if os.path.exists(base_out_dir+ current_user.uname + "/" + 'result.wav'):
-                os.remove(base_out_dir+ current_user.uname + "/" + 'result.wav')
-            return "output file removed"
-        
-@app.route('/add_contacts',methods=['POST'])
+    if request.method == "GET":
+        if os.path.exists(base_out_dir + current_user.uname + "/" + 'result.wav'):
+            os.remove(base_out_dir + current_user.uname +
+                      "/" + 'result.wav')
+        return "output file removed"
+
+
+@app.route('/get_qr_code', methods=['GET', 'POST'])
+def get_qr_code():
+    if time.time() - session['qr_start_time'] > 19.99:
+        session['qr_start_time'] = time.time()
+        session['QR_code_path'] = session['driver'].get_qr()
+    return send_file(session['QR_code_path'], mimetype="image/png", as_attachment=True, attachment_filename="qr_code_"+current_user.uname+".png")
+
+@app.route('/whatsapp_logged_in',methods=['GET'])
+def whatsapp_logged_in():
+    if request.method == 'GET':
+        if session['driver'].is_logged_in():
+            return "1"
+        return "0"
+
+@app.route('/add_contacts', methods=['POST'])
 def add_contacts():
     if request.method == 'POST':
         fname = request.form['fname']
         lname = request.form['lname']
         email = request.form['email']
-        mobile_number = request.form['mobile_number']
         s_email = request.form['second_email']
-        s_mobile_number = request.form['second_mobile_number']
 
-        new_contact = User_contacts(user_base_id = current_user.id,contact_fname = fname, contact_lname = lname, contact_email=email, contact_mobile_number=mobile_number, contact_second_email=s_email,contact_second_mobile_number=s_mobile_number)
+        new_contact = User_contacts_email(user_base_id=current_user.id, contact_fname=fname,
+                                          contact_lname=lname, contact_email=email, contact_second_email=s_email)
         db.add(new_contact)
         db.commit()
 
-        session['add_contacts_post_requests']= True
+        session['add_contacts_post_requests'] = True
 
         return redirect(url_for('home'))
 
-@app.route("/getfeature_name",methods = ['GET'])
+
+@app.route("/getfeature_name", methods=['GET'])
 def getfeature_name():
     return session['sel_feature']
 
-@app.route("/fetch_music_audio",methods = ['GET','POST'])
+
+@app.route("/fetch_music_audio", methods=['GET', 'POST'])
 def fetch_music_audio():
     # global Music_filename
-    if request.method=="POST" and session['Music_filename']!="":
-        return send_file(base_music_dir + session['Music_filename'],mimetype="audio/m4a",as_attachment=True,attachment_filename=session['Music_filename'])
+    if request.method == "POST" and session['Music_filename'] != "":
+        return send_file(base_music_dir + session['Music_filename'], mimetype="audio/m4a", as_attachment=True, attachment_filename=session['Music_filename'])
 
-@app.route("/getWelcomeMessage",methods = ['GET','POST'])
+
+@app.route("/getWelcomeMessage", methods=['GET', 'POST'])
 def getWelcomeMessage():
-    if request.method=="POST":
-        file_path = "default_messages/welcome_message_"+str(current_user.gender)+".wav"
-        return  send_file(file_path,mimetype="audio/wav",as_attachment=True)
+    if request.method == "POST":
+        file_path = "default_messages/welcome_message_" + \
+            str(current_user.gender)+".wav"
+        return send_file(file_path, mimetype="audio/wav", as_attachment=True)
 
-@app.route("/getMusicDetails_toShow",methods=["GET"])
+
+@app.route("/getMusicDetails_toShow", methods=["GET"])
 def getMusicDetails_toShow():
-    if request.method=="GET":
+    if request.method == "GET":
         return session['Music_filename']+"###--###"+session['music_thumbnail_url']
+
 
 if __name__ == "__main__":
     app.run(debug=True)
-

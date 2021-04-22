@@ -3,7 +3,7 @@ import os
 from flask import Blueprint, render_template, redirect, url_for, session, request, flash
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models.user import User, db, User_contacts
+from models.user import User, db
 from flask_login import login_required, current_user, login_user, logout_user, login_required
 from email_validator import validate_email, EmailNotValidError
 import shutil
@@ -13,6 +13,7 @@ auth = Blueprint('auth', __name__)
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
 base_out_dir = "filesystem_for_data/Audio_output_files/"
 base_gmail_cred_dir = "filesystem_for_data/gmail_cred/"
+base_whatsapp_cred_dir = "filesystem_for_data/Whatsapp_Cred/"
 
 @auth.route('/login', methods=['GET'])
 def login():
@@ -112,6 +113,8 @@ def signup_post():
     if not os.path.exists(base_gmail_cred_dir+uname):
         os.mkdir(base_gmail_cred_dir+uname)
         shutil.copy("client_secret.json",base_gmail_cred_dir+uname)
+    if not os.path.exists(base_gmail_cred_dir+uname):
+        os.mkdir(base_whatsapp_cred_dir+uname+"/profile.default")
 
 
     flash('Your account has been registered successfully!')

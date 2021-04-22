@@ -59,6 +59,18 @@
         height: 70%;
         padding-left: 20px;
         }
+        
+        
+        /* Modal Content/Box */
+        .modal-content-qr {
+        background-color: #ffff;
+        /* margin: 5% auto 15% auto; 5% from the top, 15% from the bottom and centered */
+        border-radius: 5%;
+        width: 25%; /* Could be more or less, depending on screen size */
+        height: 70%;
+        padding-left: 20px;
+        }
+
 
         .music-player{
         display: inline-block; 
@@ -136,12 +148,8 @@
                     <input type="text" placeholder="lastname" name="lname" id="lname"><br/><br/>
                     <label for="email"><b>Primary email</b></label><br/>
                     <input type="text" placeholder="email" name="email" id ="email" required><br/><br/>
-                    <label for="mobile_number"><b>Primary mobile number</b></label><br/>
-                    <input type="text" placeholder="mobile number" name="mobile_number" id="mobile_number" required><br/><br/>
                     <label for="second_email"><b>Secondary email</b></label><br/>
                     <input type="text" placeholder="email" name="second_email" id="second_email"><br/><br/>
-                    <label for="second_mobile_number"><b>Secondary mobile number</b></label><br/>
-                    <input type="text" placeholder="mobile number" name="second_mobile_number" id="second_mobile_number" ><br/><br/><br/>
                     <center><input type="submit" onclick="interrupt = 'no'; recordMode(1500);" style="width:100px;"></input></center>
             </form>
         </div>
@@ -152,6 +160,12 @@
             <img id="thumbnail-image" src="test.png" alt="Music Label Image" class="avatar"> 
             <h3 id="music-album-name" style="font: size 18px;"></h3>
             <audio id="music-player" class="music-player" controls autoplay></audio>
+        </div>
+    </div>
+    <div id="whats-app-qr-code-modal" class="modal">
+        <div class="modal-content-qr animate">
+            <span onclick="document.getElementById('whats-app-qr-code-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500);" class="close">&times;</span><br/><br/><br/><br/>
+            <img id="qr-code" alt="QR Code" class="avatar"> 
         </div>
     </div>
 </body>

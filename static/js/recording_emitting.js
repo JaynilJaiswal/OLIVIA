@@ -15,38 +15,37 @@ var stage = 0;
 var current_feature = "";
 
 
-window.onload = function(){
+window.onload = function () {
     callWelcomeMessage_and_start();
 }
 
-function callWelcomeMessage_and_start(){
+function callWelcomeMessage_and_start() {
 
-    if(document.getElementById('getWeclome_msg').innerHTML == "true")
-    {
-        welcomeMessage = document.getElementById('default-messages'); 
-    
+    if (document.getElementById('getWeclome_msg').innerHTML == "true") {
+        welcomeMessage = document.getElementById('default-messages');
+
         var xhttp = new XMLHttpRequest();
-        
+
         xhttp.open('POST', encodeURI('http://127.0.0.1:5000/getWelcomeMessage'));
         xhttp.setRequestHeader('Content-Type', 'application/json');
         xhttp.responseType = 'blob';
 
-        xhttp.onload = function(evt) {
-            var blob = new Blob([xhttp.response], {type: 'audio/wav'});
-            
+        xhttp.onload = function (evt) {
+            var blob = new Blob([xhttp.response], { type: 'audio/wav' });
+
             var objectUrl = URL.createObjectURL(blob);
             welcomeMessage.src = objectUrl;
             // Release resource when it's loaded
-            welcomeMessage.onload = function(evt) {
-                URL.revokeObjectURL(objectUrl);     
+            welcomeMessage.onload = function (evt) {
+                URL.revokeObjectURL(objectUrl);
             };
 
-            welcomeMessage.onended = function(evt) {
+            welcomeMessage.onended = function (evt) {
                 recordMode(1500);
             };
-                    
+
             welcomeMessage.load();
-            var promise = welcomeMessage.play(); 
+            var promise = welcomeMessage.play();
 
             if (promise !== undefined) {
                 promise.then(_ => {
@@ -58,7 +57,7 @@ function callWelcomeMessage_and_start(){
         };
         xhttp.send();
     }
-    else{
+    else {
         recordMode(1500);
     }
 }
@@ -84,45 +83,43 @@ function sleep(milliseconds) {
 
 function SpeakingMode() {
     document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
-    output_aud = document.getElementById('output_voice'); 
+    output_aud = document.getElementById('output_voice');
 
     var xhttp = new XMLHttpRequest();
 
     xhttp.open('POST', encodeURI('http://127.0.0.1:5000/fetch_output_audio'));
     xhttp.setRequestHeader('Content-Type', 'application/json');
     xhttp.responseType = 'blob';
-    xhttp.onload = function(evt) {
-        var blob = new Blob([xhttp.response], {type: 'audio/wav'});
+    xhttp.onload = function (evt) {
+        var blob = new Blob([xhttp.response], { type: 'audio/wav' });
         var objectUrl = URL.createObjectURL(blob);
 
         output_aud.src = objectUrl;
         // Release resource when it's loaded
-        output_aud.onload = function(evt) {
-            URL.revokeObjectURL(objectUrl);     
+        output_aud.onload = function (evt) {
+            URL.revokeObjectURL(objectUrl);
         };
-        output_aud.onended = function(){
+        output_aud.onended = function () {
             interrupt = "no";
             var xhtp = new XMLHttpRequest();
-            xhtp.open('GET',"http://127.0.0.1:5000/getfeature_name",false);
+            xhtp.open('GET', "http://127.0.0.1:5000/getfeature_name", false);
             xhtp.send();
             feature_just_selected = xhtp.responseText;
             console.log(feature_just_selected);
-            additional_request(feature_just_selected.split(", "),output_aud.duration); 
+            additional_request(feature_just_selected.split(", "), output_aud.duration);
         };
         output_aud.load();
-        output_aud.play();  
+        output_aud.play();
     };
     xhttp.send();
-    
+
 }
 
-function additional_request(feature_just_selected,duration_sleep)
-{
+function additional_request(feature_just_selected, duration_sleep) {
     // sleep(duration_sleep*1000)
 
-    for(i=0;i<feature_just_selected.length;i++)
-    {
-        if (feature_just_selected[i] == "music"){
+    for (i = 0; i < feature_just_selected.length; i++) {
+        if (feature_just_selected[i] == "music") {
 
             document.getElementById('music-modal').style.display = "block";
             interrupt = "yes";
@@ -132,61 +129,50 @@ function additional_request(feature_just_selected,duration_sleep)
 
             //fetching music name and thumbnail url
             var xhtp = new XMLHttpRequest();
-            xhtp.open('GET',"http://127.0.0.1:5000/getMusicDetails_toShow",false);
+            xhtp.open('GET', "http://127.0.0.1:5000/getMusicDetails_toShow", false);
             xhtp.send();
             name_url = xhtp.responseText;
 
             music_name = document.getElementById("music-album-name");
             music_name.innerHTML = name_url.split("###--###")[0].slice(0, -4);
             console.log("music name set")
-            
+
             music_image = document.getElementById("thumbnail-image");
             console.log("thumbnail_fetched!")
             music_image.src = name_url.split("###--###")[1];
-            
-            music_player = document.getElementById('music-player'); 
-    
+
+            music_player = document.getElementById('music-player');
+
             // fetching audio api
             var xhttp = new XMLHttpRequest();
-    
+
             xhttp.open('POST', encodeURI('http://127.0.0.1:5000/fetch_music_audio'));
             xhttp.setRequestHeader('Content-Type', 'application/json');
             xhttp.responseType = 'blob';
-            xhttp.onload = function(evt) {
-                var blob = new Blob([xhttp.response], {type: 'audio/m4a'});
+            xhttp.onload = function (evt) {
+                var blob = new Blob([xhttp.response], { type: 'audio/m4a' });
                 var objectUrl = URL.createObjectURL(blob);
-    
+
                 music_player.src = objectUrl;
                 // music_player.style = "display: inline-block";
                 // Release resource when it's loaded
-                music_player.onload = function(evt) {
-                    URL.revokeObjectURL(objectUrl);     
+                music_player.onload = function (evt) {
+                    URL.revokeObjectURL(objectUrl);
                 };
                 music_player.load();
-                music_player.play();  
+                music_player.play();
             };
             xhttp.send();
 
             //display modal
         }
-        else if (feature_just_selected[i] == "email-contact-not-found"){
+        else if (feature_just_selected[i] == "email-contact-not-found") {
             document.getElementById('contacts-modal').style.display = "block";
             interrupt = "yes";
-            console.log("music feature");
-        }
-        else if (feature_just_selected[i] == "email-contact-empty"){
-            document.getElementById('contacts-modal').style.display = "block";
-            interrupt = "yes";
-            console.log("music feature");
-        }
-        else if (feature_just_selected[i] == "email-email-not-found"){
-            document.getElementById('contacts-modal').style.display = "block";
-            interrupt = "yes";
-            console.log("music feature");
+            console.log("no contact found");
         }
 
-        else if (feature_just_selected[i] == "email")
-        {
+        else if (feature_just_selected[i] == "email") {
             stage = 1;
             current_feature = "email";
             interrupt = "yes";
@@ -195,8 +181,7 @@ function additional_request(feature_just_selected,duration_sleep)
             document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
             justRecordMode(10000);
         }
-        else if (feature_just_selected[i] == "email-stage2")
-        {
+        else if (feature_just_selected[i] == "email-stage2") {
             stage = 2;
             current_feature = "email";
             interrupt = "yes";
@@ -205,11 +190,64 @@ function additional_request(feature_just_selected,duration_sleep)
             document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
             justRecordMode(10000);
         }
+
+        else if (feature_just_selected[i] == "message") {
+            stage = 2;
+            current_feature = "message";
+            interrupt = "yes";
+            console.log("message 2");
+            document.getElementById("mic-box").style.pointerEvents = "none";
+            document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
+            justRecordMode(5000);
+        }
+
+        else if (feature_just_selected[i] == "message-scan-qr") {
+            stage = 1;
+            current_feature = "message-scan-qr";
+            interrupt = "yes";
+            console.log("message 1");
+            document.getElementById("mic-box").style.pointerEvents = "none";
+
+            document.getElementById('whats-app-qr-code-modal').style.display = "block";
+
+            var xhttp = new XMLHttpRequest();
+
+            qr_code = document.getElementById('qr-code');
+
+            xhttp.open('GET', encodeURI('http://127.0.0.1:5000/get_qr_code'));
+            xhttp.setRequestHeader('Content-Type', 'application/json');
+            xhttp.responseType = 'blob';
+            xhttp.onload = function (evt) {
+                var blob = new Blob([xhttp.response], { type: 'image/png' });
+                var objectUrl = URL.createObjectURL(blob);
+
+                qr_code.src = objectUrl;
+
+                var xhtp = new XMLHttpRequest();
+                xhtp.open('GET', "http://127.0.0.1:5000/whatsapp_logged_in", false)
+                xhtp.send();
+                
+                if (xhtp.responseText == "0") {
+                    setTimeout(function () {
+                        xhttp.send();
+                    }, 20000)
+                }
+
+                else{
+                    qr_code.src = ""
+                    document.getElementById('whats-app-qr-code-modal').style.display = "none";
+                    interrupt = 'no';
+                    recordMode(1500);
+                }
+            };
+
+            xhttp.send();
+        }
     }
 
-    if (interrupt=="no"){
-            recordMode(1500);
-            reset();
+    if (interrupt == "no") {
+        recordMode(1500);
+        reset();
     }
 }
 
@@ -250,9 +288,9 @@ function justRecordMode(time) {
 
         }, time);
     }).catch((error) => {
-      this.setState({
-          error: error.message
-      });
+        this.setState({
+            error: error.message
+        });
     });
 }
 function recordMode(time) {
@@ -279,13 +317,13 @@ function recordMode(time) {
 
             gumStream.getAudioTracks()[0].stop();
             // interrupt = "no";
-            if(interrupt=="no"){
+            if (interrupt == "no") {
                 rec.exportWAV(uploadWAVFile);
             }
-            else{
+            else {
                 var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function() {
-                    if (this.readyState==4){
+                xhttp.onreadystatechange = function () {
+                    if (this.readyState == 4) {
                         document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
                         justRecordMode(10000);
                     }
@@ -298,9 +336,9 @@ function recordMode(time) {
 
         }, time);
     }).catch((error) => {
-      this.setState({
-          error: error.message
-      });
+        this.setState({
+            error: error.message
+        });
     });
 }
 
@@ -317,16 +355,16 @@ function justUploadWAVFile(blob) {
 
     var xhr = new XMLHttpRequest();
     var fd = new FormData();
-    fd.append("stage",stage);
-    fd.append("feature",current_feature);
+    fd.append("stage", stage);
+    fd.append("feature", current_feature);
     fd.append("audio_data", blob, filename + '.wav');
-    xhr.onreadystatechange = function() {
-        if (this.readyState==4){
+    xhr.onreadystatechange = function () {
+        if (this.readyState == 4) {
             // console.log(times);
-            if (JSON.parse(xhr.responseText)["continue"]=="YES"){
+            if (JSON.parse(xhr.responseText)["continue"] == "YES") {
                 recordMode(1500);
             }
-            else{
+            else {
                 ProcessMode();
             }
         }
@@ -344,33 +382,33 @@ function uploadWAVFile(blob) {
 
     var xhr = new XMLHttpRequest();
     var fd = new FormData();
-    fd.append("stage",stage);
-    fd.append("feature",current_feature);
+    fd.append("stage", stage);
+    fd.append("feature", current_feature);
     fd.append("audio_data", blob, filename + '.wav');
-    xhr.onreadystatechange = function() {
-        if (this.readyState==4){
+    xhr.onreadystatechange = function () {
+        if (this.readyState == 4) {
             // console.log(times);
-            if (JSON.parse(xhr.responseText)["continue"]=="YES"){
-                if (JSON.parse(xhr.responseText)["listen"]=="YES"){
+            if (JSON.parse(xhr.responseText)["continue"] == "YES") {
+                if (JSON.parse(xhr.responseText)["listen"] == "YES") {
                     document.getElementById("mic-box").style.pointerEvents = "none";
-                    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";   
-                    recordMode(10000); 
+                    document.body.style.backgroundImage = "url(../static/images/VA_anim4_listening.gif)";
+                    recordMode(10000);
                 }
-                else{
-                    if (JSON.parse(xhr.responseText)['error']=="YES"){
+                else {
+                    if (JSON.parse(xhr.responseText)['error'] == "YES") {
                         reset();
                     }
                     recordMode(1500);
                 }
             }
-            else{
+            else {
                 interrupt = "yes";
                 ProcessMode();
             }
         }
     };
     xhr.open("POST", "http://127.0.0.1:5000/process", true);
-    if (interrupt=="no"){
+    if (interrupt == "no") {
         xhr.send(fd);
     }
     // ProcessMode();
