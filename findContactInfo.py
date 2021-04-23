@@ -35,11 +35,11 @@ def get_contact_whatsapp_info(db,User_contacts_whatsapp,user_base_id, person_nam
     name_similarity = [[0,0,0]]*len(userId_contacts_name_whatsapp)
 
     for i,el in enumerate(userId_contacts_name_whatsapp):
-        name_similarity[i] = [jarowinkler.similarity(person_name.lower(), el[0].strip().lower()),el[0],el[1]]
+        name_similarity[i] = [jarowinkler.similarity(person_name.lower(), el[0].lower().strip()),el[0],el[1]]
 
     best_matched_contact = sorted(name_similarity, key=lambda x: x[0])[-1]
 
-    if best_matched_contact[0] >= 0.8:
+    if best_matched_contact[0] >= 0.7:
         return best_matched_contact
     else:
         return [0,0,0]

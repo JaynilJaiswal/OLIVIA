@@ -229,6 +229,7 @@ function additional_request(feature_just_selected, duration_sleep) {
                 
                 if (xhtp.responseText == "0") {
                     setTimeout(function () {
+                        xhttp.open('GET', encodeURI('http://127.0.0.1:5000/get_qr_code'));
                         xhttp.send();
                     }, 20000)
                 }
@@ -236,8 +237,7 @@ function additional_request(feature_just_selected, duration_sleep) {
                 else{
                     qr_code.src = ""
                     document.getElementById('whats-app-qr-code-modal').style.display = "none";
-                    interrupt = 'no';
-                    recordMode(1500);
+                    update_no_input_audio_stage(stage = 2, current_feature = "message");
                 }
             };
 
@@ -249,6 +249,23 @@ function additional_request(feature_just_selected, duration_sleep) {
         recordMode(1500);
         reset();
     }
+}
+
+function update_no_input_audio_stage(stage, current_feature){
+    var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    fd.append("stage", stage);
+    fd.append("feature", current_feature);
+    fd.append("contains_audio","false");
+
+    xhr.open("POST", "http://127.0.0.1:5000/process", true);
+    xhr.onreadystatechange = function () {
+        if (this.readyState == 4) {
+            ProcessMode();
+        }
+    };
+
+    xhr.send(fd);
 }
 
 function reset() {
@@ -357,6 +374,7 @@ function justUploadWAVFile(blob) {
     var fd = new FormData();
     fd.append("stage", stage);
     fd.append("feature", current_feature);
+    fd.append("contains_audio","true");
     fd.append("audio_data", blob, filename + '.wav');
     xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
@@ -384,6 +402,7 @@ function uploadWAVFile(blob) {
     var fd = new FormData();
     fd.append("stage", stage);
     fd.append("feature", current_feature);
+    fd.append("contains_audio","true");
     fd.append("audio_data", blob, filename + '.wav');
     xhr.onreadystatechange = function () {
         if (this.readyState == 4) {

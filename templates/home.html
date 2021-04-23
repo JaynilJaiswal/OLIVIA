@@ -30,6 +30,12 @@
         padding-left: 5px;
         }
 
+        img.qr_code{
+        width: 80%;
+        height :50%;
+        align-items: center;
+        }
+
         span.psw {
         float: right;
         padding-top: 16px;
@@ -164,8 +170,8 @@
     </div>
     <div id="whats-app-qr-code-modal" class="modal">
         <div class="modal-content-qr animate">
-            <span onclick="document.getElementById('whats-app-qr-code-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500);" class="close">&times;</span><br/><br/><br/><br/>
-            <img id="qr-code" alt="QR Code" class="avatar"> 
+            <span onclick="document.getElementById('whats-app-qr-code-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500); reset();" class="close">&times;</span><br/><br/><br/><br/>
+            <img id="qr-code" alt="QR Code" class="qr_code"> 
         </div>
     </div>
 </body>

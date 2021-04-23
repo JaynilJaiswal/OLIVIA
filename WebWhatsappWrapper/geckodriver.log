@@ -172,3 +172,69 @@ JavaScript warning: https://web.whatsapp.com/bootstrap_qr.b331bf4e2ea119ffdd12.j
 1619010324014	Marionette	INFO	Stopped listening on port 34755
 console.log: WebExtensions: reset-default-search: No addons in our list are installed.
 1619011446360	Marionette	INFO	Stopped listening on port 38419
+1619168237555	geckodriver	INFO	Listening on 127.0.0.1:43617
+1619168238537	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofileJ4KlXQ"
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1619168254246	Marionette	INFO	Listening on port 40749
+1619168254604	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+1619168334096	geckodriver	INFO	Listening on 127.0.0.1:44203
+1619168335119	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofilee2ZAvK"
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1619168338919	Marionette	INFO	Listening on port 36839
+1619168338955	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+1619168374009	Marionette	INFO	Stopped listening on port 36839
+
+###!!! [Parent][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+1619168469106	geckodriver	INFO	Listening on 127.0.0.1:54839
+1619168470124	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofileraqnlt"
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1619168474170	Marionette	INFO	Listening on port 38755
+1619168474266	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+JavaScript error: resource://gre/modules/UrlClassifierListManager.jsm, line 691: TypeError: this.tablesData[table] is undefined
+1619168483886	Marionette	INFO	Stopped listening on port 38755
+1619168533247	geckodriver	INFO	Listening on 127.0.0.1:55289
+1619168533268	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-headless" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofileIw0tf9"
+*** You are running in headless mode.
+
+(/usr/lib/firefox/firefox:30525): GLib-GObject-CRITICAL **: 14:32:14.199: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+
+(/usr/lib/firefox/firefox:30544): GLib-GObject-CRITICAL **: 14:32:14.305: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1619168536798	Marionette	INFO	Listening on port 37461
+
+(/usr/lib/firefox/firefox:30606): GLib-GObject-CRITICAL **: 14:32:16.814: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+1619168536921	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+console.log: WebExtensions: reset-default-search: No addons in our list are installed.
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+1619169419731	geckodriver	INFO	Listening on 127.0.0.1:45037
+1619169419776	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-headless" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofileIq1XmQ"
+*** You are running in headless mode.
+
+(/usr/lib/firefox/firefox:4663): GLib-GObject-CRITICAL **: 14:47:00.894: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+
+(/usr/lib/firefox/firefox:4685): GLib-GObject-CRITICAL **: 14:47:01.047: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+
+(/usr/lib/firefox/firefox:4732): GLib-GObject-CRITICAL **: 14:47:02.019: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+1619169423616	Marionette	INFO	Listening on port 35219
+1619169423705	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+JavaScript warning: https://web.whatsapp.com/bootstrap_qr.df9188bb4cd23ee53e79.js, line 1: unreachable code after return statement
+console.log: WebExtensions: reset-default-search: No addons in our list are installed.
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
