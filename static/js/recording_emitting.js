@@ -217,27 +217,24 @@ function additional_request(feature_just_selected, duration_sleep) {
             xhttp.open('GET', encodeURI('http://127.0.0.1:5000/get_qr_code'));
             xhttp.setRequestHeader('Content-Type', 'application/json');
             xhttp.responseType = 'blob';
-            xhttp.onload = function (evt) {
-                var blob = new Blob([xhttp.response], { type: 'image/png' });
-                var objectUrl = URL.createObjectURL(blob);
+            xhttp.onreadystatechange = function (evt) {
+                if (this.readyState == 4) {
+                    var blob = new Blob([xhttp.response], { type: 'image/png' });
+                    var objectUrl = URL.createObjectURL(blob);
 
-                qr_code.src = objectUrl;
+                    qr_code.src = objectUrl; 
 
-                var xhtp = new XMLHttpRequest();
-                xhtp.open('GET', "http://127.0.0.1:5000/whatsapp_logged_in", false)
-                xhtp.send();
-                
-                if (xhtp.responseText == "0") {
-                    setTimeout(function () {
-                        xhttp.open('GET', encodeURI('http://127.0.0.1:5000/get_qr_code'));
-                        xhttp.send();
-                    }, 20000)
-                }
+                    if(checkLoggedIn(Date.now()))
+                    {
+                        console.log("else occured!")
+                        qr_code.src = ""
+                        document.getElementById('whats-app-qr-code-modal').style.display = "none";
+                        update_no_input_audio_stage(stage = 1 , current_feature = "message-scan-qr");
+                    }
 
-                else{
-                    qr_code.src = ""
-                    document.getElementById('whats-app-qr-code-modal').style.display = "none";
-                    update_no_input_audio_stage(stage = 2, current_feature = "message");
+                    else{
+                        console.log("20 sec passed not scanned!")
+                    }
                 }
             };
 
@@ -248,6 +245,31 @@ function additional_request(feature_just_selected, duration_sleep) {
     if (interrupt == "no") {
         recordMode(1500);
         reset();
+    }
+}
+
+function checkLoggedIn(start) {
+
+    console.log(Date.now() - start)
+    if(Date.now() - start < 20000)
+    {
+        var xhtp = new XMLHttpRequest();
+        xhtp.open('GET', "http://127.0.0.1:5000/whatsapp_logged_in", false)
+        
+        xhtp.onreadystatechange = function() {
+            if(this.readyState == 4)
+            { 
+                if(xhtp.responseText == "0")
+                { 
+                    setTimeout(checkLoggedIn(start),1000);
+                }
+            }
+        }
+        xhtp.send();
+        return true;
+    } 
+    else{
+        return false;
     }
 }
 

@@ -40,9 +40,9 @@ db.create_all()
 geolocator = Nominatim(user_agent="geoapiExercises")
 
 
-STT_href = "http://3037dc8af8ef.ngrok.io/"
-TTS_href = "http://3508a3294a78.ngrok.io/"
-NLU_href = "http://c305029064b9.ngrok.io/"
+STT_href = "http://61aa4bbee2cc.ngrok.io/"
+TTS_href = "http://90e03e00a8b7.ngrok.io/"
+NLU_href = "http://de92562e08e4.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -310,6 +310,9 @@ def get_associated_text(query, feature):
 def iterative_running_feature(filename, stage, user_data, feature_name):
     if feature_name == "message-scan-qr":
         if stage == 1:
+
+            print("------------Saing web whatsapp profile--------------")
+
             whatsapp_driver_dictionary[current_user.uname]._profile_path = os.getcwd()+"/" +base_whatsapp_cred_dir + \
                 current_user.uname+"/profile.default"
             whatsapp_driver_dictionary[current_user.uname].save_firefox_profile()
