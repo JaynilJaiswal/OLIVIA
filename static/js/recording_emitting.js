@@ -13,7 +13,7 @@ var interrupt = "no";
 feature_just_selected = "";
 var stage = 0;
 var current_feature = "";
-
+var qr_start_time;
 
 window.onload = function () {
     callWelcomeMessage_and_start();
@@ -223,22 +223,21 @@ function additional_request(feature_just_selected, duration_sleep) {
                     var objectUrl = URL.createObjectURL(blob);
 
                     qr_code.src = objectUrl; 
-
-                    if(checkLoggedIn(Date.now()))
-                    {
-                        console.log("else occured!")
-                        qr_code.src = ""
-                        document.getElementById('whats-app-qr-code-modal').style.display = "none";
-                        update_no_input_audio_stage(stage = 1 , current_feature = "message-scan-qr");
-                    }
-
-                    else{
-                        console.log("20 sec passed not scanned!")
-                    }
                 }
             };
-
             xhttp.send();
+            var res="0";
+            qr_start_time = Date.now();
+            do {
+                res = checkLoggedIn(qr_start_time);
+                console.log(res);
+                sleep(1500);
+            }while(res=="0")
+            // if (res == "1"){
+            qr_code.src = "";
+            document.getElementById('whats-app-qr-code-modal').style.display = "none";
+            update_no_input_audio_stage(stage = 1 , current_feature = "message-scan-qr");
+            // }
         }
     }
 
@@ -248,29 +247,35 @@ function additional_request(feature_just_selected, duration_sleep) {
     }
 }
 
-function checkLoggedIn(start) {
-
-    console.log(Date.now() - start)
-    if(Date.now() - start < 20000)
-    {
+function checkLoggedIn(time) {
         var xhtp = new XMLHttpRequest();
         xhtp.open('GET', "http://127.0.0.1:5000/whatsapp_logged_in", false)
         
         xhtp.onreadystatechange = function() {
             if(this.readyState == 4)
             { 
-                if(xhtp.responseText == "0")
-                { 
-                    setTimeout(checkLoggedIn(start),1000);
+                if(Date.now() - time > 20000){
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.open('GET', encodeURI('http://127.0.0.1:5000/get_qr_code'));
+                    xhttp.setRequestHeader('Content-Type', 'application/json');
+                    xhttp.responseType = 'blob';
+                    xhttp.onreadystatechange = function (evt) {
+                        if (this.readyState == 4) {
+                            var blob = new Blob([xhttp.response], { type: 'image/png' });
+                            var objectUrl = URL.createObjectURL(blob);
+                            qr_code.src = objectUrl; 
+                        }
+                    };
+                    qr_start_time = Date.now();
+                    xhttp.send();
                 }
+                // sleep(5000);
             }
         }
         xhtp.send();
-        return true;
-    } 
-    else{
-        return false;
-    }
+        return xhtp.responseText;
+
+     
 }
 
 function update_no_input_audio_stage(stage, current_feature){

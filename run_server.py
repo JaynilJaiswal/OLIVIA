@@ -40,8 +40,8 @@ db.create_all()
 geolocator = Nominatim(user_agent="geoapiExercises")
 
 
-STT_href = "http://61aa4bbee2cc.ngrok.io/"
-TTS_href = "http://90e03e00a8b7.ngrok.io/"
+STT_href = "http://575c320684e1.ngrok.io/"
+TTS_href = "http://52380fcd9163.ngrok.io/"
 NLU_href = "http://de92562e08e4.ngrok.io/"
 audio_classifier = AudioClassifier()
 
@@ -739,10 +739,10 @@ def fetch_output_audio():
 @app.route('/get_qr_code', methods=['GET', 'POST'])
 def get_qr_code():
     print(time.time() - session['qr_start_time'])
-    if time.time() - session['qr_start_time'] > 19.99:
-        session['qr_start_time'] = time.time()
-        session['QR_code_path'] = whatsapp_driver_dictionary[current_user.uname].get_qr()
-        print("new QR code")
+    # if time.time() - session['qr_start_time'] > 19.99:
+    #     session['qr_start_time'] = time.time()
+    session['QR_code_path'] = whatsapp_driver_dictionary[current_user.uname].get_qr()
+    print("new QR code")
     return send_file(session['QR_code_path'], mimetype="image/png", as_attachment=True, attachment_filename="qr_code_"+current_user.uname+".png")
 
 
