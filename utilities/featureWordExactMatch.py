@@ -13,7 +13,7 @@ feature_db = {
 
         "music":["music","play","lay"],
 
-        "find information": ["information","detail","details","find"],
+        "find-information": ["information","detail","details","find","get","info","happening","about","news"],
 
         "message":["message","chat","whatsapp","ping"],
         

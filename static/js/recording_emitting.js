@@ -239,6 +239,94 @@ function additional_request(feature_just_selected, duration_sleep) {
             update_no_input_audio_stage(stage = 1 , current_feature = "message-scan-qr");
             // }
         }
+
+        else if (feature_just_selected[i] == "find-information") {
+            document.getElementById('findInfo-modal').style.display = "block";
+            interrupt = "yes";
+
+            // document.body.style.backgroundImage = "url(../static/images/VA_anim4_speaking.gif)";
+            console.log("Find Information feature");
+
+            //fetching music name and thumbnail url
+            var xhtp = new XMLHttpRequest();
+            xhtp.open('GET', "http://127.0.0.1:5000/getFindInfoDetails_toShow", false);
+            xhtp.send();
+            findInfoData = xhtp.responseText;
+
+            var findInfo = findInfoData.split("|||##||##||##|||")
+
+            var findInfo_urls = findInfo[0].split("###--###")
+            var findInfo_wiki_summary = findInfo[1]
+            var findInfo_wiki_image_list = findInfo[2].split("###--###")
+            var findInfo_wiki_url = findInfo[3]
+
+            var leftDiv = document.getElementById('left-findInfo')
+
+            for (var k=0;k<findInfo_urls.length;k++)
+            {
+                findInfo_urls_data = findInfo_urls[k].split("##^^33^^##")
+
+                findInfo_urls_url = findInfo_urls_data[0]
+                findInfo_urls_title = findInfo_urls_data[1]
+                findInfo_urls_image = findInfo_urls_data[2]
+                findInfo_urls_desc = findInfo_urls_data[3]
+
+                var makeAnch = document.createElement("a title");
+                makeAnch.setAttribute("href", findInfo_urls_data[0]);
+                makeAnch.setAttribute("title",findInfo_urls_data[1]);
+                makeAnch.style = "display: block;top: 0px;position: relative;max-width: 262px;background-color: #f2f8f9;border-radius: 4px;padding: 32px 24px;margin: 12px;text-decoration: none;z-index: 0;overflow: hidden;border: 1px solid #f2f8f9;&:hover {transition: all 0.2s ease-out;box-shadow: 0px 4px 8px rgba(38, 38, 38, 0.2);top: -4px;border: 1px solid #cccccc;background-color: white;} &:before {content: '';position: absolute;z-index: -1;top: -16px;right: -16px;background: #00838d;height: 32px;width: 32px;border-radius: 32px;transform: scale(2);transform-origin: 50% 50%;transition: transform 0.15s ease-out;}&:hover:before {transform: scale(2.15);}"
+                makeAnch.innerHTML = "<div class='card'><div class='card_left'><img src='`${findInfo_urls_image}`'></div><div class='card_right'><h1>`${findInfo_urls_title}`</h1><div class='card_right__details'><div class='card_right__review'><p>`${findInfo_urls_desc}`</p></div></div></div></div>"
+
+                leftDiv.appendChild(makeAnch);
+            }
+
+            // var rightDiv = document.getElementById('right-findInfo')
+            
+            // var makediv = document.createElement("div");
+            // makediv.style.height = "50%";
+            // makediv.style.width = "100%";
+            // makediv.style.position = "relative";
+            // makediv.style.overflow = "auto";
+
+            // // code for image gallery
+            // for(var l=0;l<findInfo_wiki_image_list.lenght;l++){
+            //     var responsive = document.createElement("div");
+            //     responsive.style = "padding: 0 6px;float: left;width: 24.99999%;"
+                
+            //     var gallery = document.createElement("div");
+            //     gallery.className = 'gallery';
+
+            //     var img = document.createElement("img");
+            //     img.style = "width: 100%;height: auto;";                    
+            //     img.setAttribute("src",findInfo_wiki_image_list[l]);
+            //     img.setAttribute("width", "450");
+            //     img.setAttribute("height", "450");
+
+            //     gallery.appendChild(img);
+            //     responsive.appendChild(gallery);
+            //     makediv.appendChild(responsive);
+            // }
+
+            if(findInfo_wiki_summary == ""){
+
+                // rightDiv.appendChild(makediv);
+            }
+
+            else{
+
+                // var makeIframe = document.createElement("iframe");
+                // makeIframe.setAttribute("src", findInfo_wiki_url);
+                // makeIframe.setAttribute("border", "10pt");
+                // makeIframe.setAttribute("position", "absolute");
+                // makeIframe.setAttribute("width", "100%");
+                // makeIframe.setAttribute("height", "50%");
+                // makeIframe.setAttribute("scrolling", "yes");
+
+                // rightDiv.appendChild(makeIframe);
+                
+                // rightDiv.appendChild(makediv);
+            }
+        }
     }
 
     if (interrupt == "no") {

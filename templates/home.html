@@ -23,6 +23,8 @@
             height: 400px;
         }
 
+
+
         img.avatar {
         width: 50%;
         border-radius: 5%;
@@ -57,6 +59,16 @@
         }
 
         /* Modal Content/Box */
+        .modal-content-findInfo {
+        background-color: #04d9ff;
+        /* margin: 5% auto 15% auto; 5% from the top, 15% from the bottom and centered */
+        border-radius: 5%;
+        width: 95%; /* Could be more or less, depending on screen size */
+        height: 95%;
+        padding-left: 20px;
+        }
+
+        /* Modal Content/Box */
         .modal-content {
         background-color: #04d9ff;
         /* margin: 5% auto 15% auto; 5% from the top, 15% from the bottom and centered */
@@ -77,6 +89,44 @@
         padding-left: 20px;
         }
 
+        .split {
+        height: 100%;
+        width: 50%;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        overflow-x: auto;
+        padding-top: 20px;
+        }
+
+        /* Control the left side */
+        .left {
+        left: 0;
+        background: #e2e2e2;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        }
+
+        /* Control the right side */
+        .right {
+        right: 0;
+        background: #e2e2e2;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        }
+
+        /* If you want the content centered horizontally and vertically */
+        .centered {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        }
 
         .music-player{
         display: inline-block; 
@@ -99,6 +149,14 @@
         .close:focus {
         color: red;
         cursor: pointer;
+        }
+
+        .gallery {
+        border: 1px solid #ccc;
+        }
+
+        .gallery:hover{
+        border: 1px solid #777;
         }
 
         /* Add Zoom Animation */
@@ -126,6 +184,64 @@
         .cancelbtn {
             width: 100%;
         }
+        }
+
+
+        /* Card CSS for find info */
+
+        @import url(https://fonts.googleapis.com/css?family=Montserrat:400,700);
+        @import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+        
+        .card {
+        width: 45%;
+        height: 20%;
+        background: transparent;
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        box-shadow: 0px 20px 30px 3px rgba(0, 0, 0, 0.55);
+        }
+        
+        .card_left {
+        width: 20%;
+        height: 100%;
+        float: left;
+        overflow: hidden;
+        background: transparent;
+        }
+        .card_left img {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px 0 0 10px;
+        -webkit-border-radius: 10px 0 0 10px;
+        -moz-border-radius: 10px 0 0 10px;
+        position: relative;
+        }
+        .card_right {
+        width: 80%;
+        float: left;
+        background: #ffffff;
+        height: 100%;
+        border-radius: 0 10px 10px 0;
+        -webkit-border-radius: 0 10px 10px 0;
+        -moz-border-radius: 0 10px 10px 0;
+        }
+        .card_right h1 {
+        color: black;
+        font-family: "Arial", black;
+        font-weight: 500;
+        text-align: left;
+        font-size: 18px;
+        margin: px 0 0 0;
+        padding: 0 0 0 5px;
+        letter-spacing: 1px;
+        }
+
+        .card_right__review p {
+        color: black;
+        font-family: "Montserrat", sans-serif;
+        font-size: 12px;
+        overflow: hidden;
         }
     </style>
 </head>
@@ -172,6 +288,13 @@
         <div class="modal-content-qr animate">
             <span onclick="document.getElementById('whats-app-qr-code-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500); reset();" class="close">&times;</span><br/><br/><br/><br/>
             <img id="qr-code" alt="QR Code" class="qr_code"> 
+        </div>
+    </div>
+    <div id="findInfo-modal" class="modal">
+        <div class="modal-content-findInfo animate">
+            <span onclick="document.getElementById('findInfo-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500);" class="close">&times;</span><br/><br/><br/><br/>
+            <div id= "left-findInfo" class="split left"></div>
+            <div id= "right-findInfo" class="split right"></div>
         </div>
     </div>
 </body>

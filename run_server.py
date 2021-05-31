@@ -1,3 +1,4 @@
+from features.findInfo import FindInfoFinalData
 from WebWhatsappWrapper.webwhatsapi import WhatsAPIDriver
 from features.email import send_email
 from features.music import getMusicDetails, getMusicFile_key
@@ -40,9 +41,9 @@ db.create_all()
 geolocator = Nominatim(user_agent="geoapiExercises")
 
 
-STT_href = "http://575c320684e1.ngrok.io/"
-TTS_href = "http://52380fcd9163.ngrok.io/"
-NLU_href = "http://de92562e08e4.ngrok.io/"
+STT_href = "http://94b866a6d72d.ngrok.io/"
+TTS_href = "http://7c9205651746.ngrok.io/"
+NLU_href = "http://ec95de935059.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -74,7 +75,7 @@ whatsapp_driver_dictionary = {}
 
 # output_audio_ready = "no"
 # corrector = DeepCorrect('Models/DeepCorrect_PunctuationModel/deeppunct_params_en', 'Models/DeepCorrect_PunctuationModel/deeppunct_checkpoint_google_news')
-# FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find information","message","email","call","features","translation"]
+# FEATURE_LIST= ["time","date","location","weather","alarm reminder","schedule","music","find-information","message","email","call","features","translation"]
 
 def select_feature(name, user_data, query):
     # global Music_filename
@@ -253,8 +254,22 @@ def select_feature(name, user_data, query):
     if name == "schedule":
         return ["Feature to be added soon.", "schedule"]
 
-    if name == "find information":
-        return ["Feature to be added soon.", "find information"]
+    if name == "find-information":
+
+        context_detail = get_associated_text(query, 'find-information')
+        
+        [results,wiki_summary,wiki_image_list, wiki_url] = FindInfoFinalData(context_detail)
+
+        session["findInfo-results"] = "###--###".join(results)
+        session["findInfo-wiki_summary"] = wiki_summary
+        session["findInfo-wiki_image_list"] = "###--###".join(wiki_image_list)
+        session["findInfo-wiki_url"] = wiki_url
+
+        if wiki_summary=="":
+            return ["Displaying information for "+context_detail+" on your screen.", "find-information"]
+        
+        vocal_wiki_summary_output = ". ".join(wiki_summary.split(". ")[:2])
+        return ["Sir, " + vocal_wiki_summary_output + " Other related articles, images and web links are displayed on your screen.", "find-information"]
 
     if name == "call":
         return ["Feature to be added soon.", "call"]
@@ -304,6 +319,57 @@ def get_associated_text(query, feature):
             return query.split("ping")[1]
         else:
             return ""
+    elif feature == "find-information":
+        if "information" in query:
+            if "information on" in query: 
+                return query.split("information on")[1]
+            elif "information about" in query:
+                return query.split("information about")[1]
+            elif "information regarding" in query:
+                return query.split("information regarding")[1]
+            elif "information for" in query:
+                return query.split("information for")[1]
+            elif "information in regards to" in query:
+                return query.split("information in regards to")[1]
+
+        elif "info" in query:
+            if "info on" in query: 
+                return query.split("info on")[1]
+            elif "info about" in query:
+                return query.split("info about")[1]
+            elif "info regarding" in query:
+                return query.split("info regarding")[1]
+            elif "info for" in query:
+                return query.split("info for")[1]
+            elif "info in regards to" in query:
+                return query.split("info in regards to")[1]
+
+        elif "detail" in query:
+            if "detail on" in query: 
+                return query.split("detail on")[1]
+            elif "detail about" in query:
+                return query.split("detail about")[1]
+            elif "detail regarding" in query:
+                return query.split("detail regarding")[1]
+            elif "detail for" in query:
+                return query.split("detail for")[1]
+            elif "detail in regards to" in query:
+                return query.split("detail in regards to")[1]
+
+        elif "details" in query:
+            if "details on" in query: 
+                return query.split("details on")[1]
+            elif "details about" in query:
+                return query.split("details about")[1]
+            elif "details regarding" in query:
+                return query.split("details regarding")[1]
+            elif "details for" in query:
+                return query.split("details for")[1]
+            elif "details in regards to" in query:
+                return query.split("details in regards to")[1]
+        
+        else:
+            return query
     return
 
 
@@ -311,7 +377,7 @@ def iterative_running_feature(filename, stage, user_data, feature_name):
     if feature_name == "message-scan-qr":
         if stage == 1:
 
-            print("------------Saing web whatsapp profile--------------")
+            print("------------Saving web whatsapp profile--------------")
 
             whatsapp_driver_dictionary[current_user.uname]._profile_path = os.getcwd()+"/" +base_whatsapp_cred_dir + \
                 current_user.uname+"/profile.default"
@@ -546,8 +612,10 @@ def backend_pipeline(filename, user_data):
         print(str(feature_l))
         print("====================================================================")
         print("\n")
-        input_str = [select_feature(feature_l[0], user_data, text)]
 
+        input_str = [select_feature(feature_l[0], user_data, text)]
+        print(input_str)
+        
     elif token == "multiple features selected":
         print("====================================================================")
         print("====================================================================")
@@ -570,8 +638,12 @@ def backend_pipeline(filename, user_data):
         print("====================================================================")
         print("\n")
 
-        input_str = [select_feature(
-            r['Most related feature'][0][0], user_data, text)]
+        if float(r['Most related feature'][0][1]) > 0.5:
+            input_str = [select_feature("find-information", user_data, text)]
+
+        else:
+            input_str = [select_feature( r['Most related feature'][0][0], user_data, text)]
+
 
     new_user_ch = User_command_history(user_base_id=current_user.id, command_input_text=db_com_str, command_input_filepath=base_inp_dir +
                                        current_user.uname + "/" + filename, command_feature_selected=input_str[0][1], command_output_text=input_str[0][0])
@@ -797,6 +869,10 @@ def getMusicDetails_toShow():
     if request.method == "GET":
         return session['Music_filename']+"###--###"+session['music_thumbnail_url']
 
+@app.route("/getFindInfoDetails_toShow",methods=["GET"])
+def getFindInfoDetails_toShow():
+    if request.method == "GET":
+        return session["findInfo-results"] + "|||##||##||##|||" + session["findInfo-wiki_summary"] + "|||##||##||##|||" + session["findInfo-wiki_image_list"] + "|||##||##||##|||" + session["findInfo-wiki_url"]
 
 if __name__ == "__main__":
     app.run(debug=True)
