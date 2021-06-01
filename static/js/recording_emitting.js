@@ -200,12 +200,17 @@ function additional_request(feature_just_selected, duration_sleep) {
                 findInfo_urls_image = findInfo_urls_data[2]
                 findInfo_urls_desc = findInfo_urls_data[3]
 
-                var makeAnch = document.createElement("a");
-                makeAnch.setAttribute("href", findInfo_urls_data[0]);
-                makeAnch.setAttribute("title",findInfo_urls_data[1]);
+                
 
                 var card = document.createElement("div");
                 card.className="card";
+
+
+                var makeAnch = document.createElement("a");
+                makeAnch.setAttribute("href", findInfo_urls_data[0]);
+                makeAnch.setAttribute("title",findInfo_urls_data[1]);
+                makeAnch.setAttribute("target","_blank");
+
                 var card_left = document.createElement("div");
                 card_left.className="card_left";
 
@@ -235,18 +240,15 @@ function additional_request(feature_just_selected, duration_sleep) {
                 card_right_det.appendChild(cr_p);
 
                 card_right.appendChild(linebreak);
-                card_right.appendChild(linebreak);
                 card_right.appendChild(card_right_det);
 
-                card.appendChild(card_left);
-                card.appendChild(card_right);
+                makeAnch.appendChild(card_left);
+                makeAnch.appendChild(card_right);
                 
-                makeAnch.appendChild(card);
+                card.appendChild(makeAnch);
 
-                findinfoDiv.appendChild(makeAnch);
+                findinfoDiv.appendChild(card);
 
-                findinfoDiv.appendChild(linebreak);
-                findinfoDiv.appendChild(linebreak);
                 findinfoDiv.appendChild(linebreak);
             }
         }

@@ -41,8 +41,8 @@ db.create_all()
 geolocator = Nominatim(user_agent="geoapiExercises")
 
 
-STT_href = "http://7d3e470cb880.ngrok.io/"
-TTS_href = "http://5a1eac9d279b.ngrok.io/"
+STT_href = "http://e3e800e08f0b.ngrok.io/"
+TTS_href = "http://5d24e3c47e3c.ngrok.io/"
 NLU_href = "http://926aa768f2e9.ngrok.io/"
 audio_classifier = AudioClassifier()
 
@@ -255,15 +255,15 @@ def select_feature(name, user_data, query):
         return ["Feature to be added soon.", "schedule"]
 
     if name == "find-information":
-
         context_detail = get_associated_text(query, 'find-information')
         
         [results,wiki_summary,wiki_image_list, wiki_url] = FindInfoFinalData(context_detail)
 
-        session["findInfo-results"] = "#-#".join(results)
-        # session["findInfo-wiki_summary"] = wiki_summary
-        # session["findInfo-wiki_image_list"] = "###--###".join(wiki_image_list)
-        # session["findInfo-wiki_url"] = wiki_url
+        if os.path.exists(base_out_dir + current_user.uname + "/search_urls.txt"):
+                os.remove(base_out_dir + current_user.uname + "/search_urls.txt")
+
+        with open(base_out_dir + current_user.uname + "/search_urls.txt","w") as f:
+            f.write("#-#".join(results))
 
         if wiki_summary=="":
             return ["Displaying information for "+context_detail+" on your screen.", "find-information"]
@@ -872,7 +872,11 @@ def getMusicDetails_toShow():
 @app.route("/getFindInfoDetails_toShow",methods=["GET"])
 def getFindInfoDetails_toShow():
     if request.method == "GET":
-        return session["findInfo-results"]
+        with open(base_out_dir + current_user.uname + "/search_urls.txt","r") as f:
+            results = f.read()
+        results = results.strip()
+
+        return results
 
 if __name__ == "__main__":
     app.run(debug=True)

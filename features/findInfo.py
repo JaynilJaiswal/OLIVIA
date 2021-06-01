@@ -14,8 +14,6 @@ def FindInfoFinalData(query):
 
     wiki_name = [x.split("/")[-1] for x in results if "wikipedia" in x.lower()]
 
-    results = [x for x in results if "wikipedia" not in x.lower()]
-
     temp = []
 
     for x in results:
@@ -23,6 +21,7 @@ def FindInfoFinalData(query):
             linkp = link_preview(x)
 
             if(linkp.title!=None and linkp.image!=None and linkp.description!=None):
+                print("======URl Preview Succeeded==========")
                 temp.append([x,linkp.title,linkp.image,linkp.description])
         except Exception as e:
             print(x+" caused link preview error")
@@ -67,5 +66,6 @@ def getSearchResults(query):
     #             # Due to Dogpile, code is giving TypeError: search() missing 1 required positional argument: 'query', so keeping it at last argument
     #             # Mojeek and Torch giving 403 and timout errors
 
-    # return set().union(*results)
-    return Google().search(query).links()
+    results = [Google().search(query).links(), Bing().search(query).links(), Yahoo().search(query).links()]
+    return set().union(*results)
+
