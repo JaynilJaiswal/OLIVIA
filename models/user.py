@@ -74,3 +74,11 @@ class User_contacts_whatsapp(UserMixin,db.Model):
     contact_name = db.Column(db.String(80))
     contact_id = db.Column(db.String(50))
     user_base = db.relationship("User",backref=db.backref("user_base_contacts_whatsapp", uselist=False))
+
+class User_findInfo_urls(UserMixin,db.Model):
+    __tablename__ = 'user_findInfo_urls'
+    id = db.Column(db.Integer, primary_key=True)
+    user_base_id = db.Column(db.Integer, db.ForeignKey('user_base.id'))
+    contact_time_created = db.Column('dateTime_created', db.DateTime, nullable=False, default=datetime.datetime.utcnow)   
+    urls = db.Column(db.String(1000))
+    user_base = db.relationship("User",backref=db.backref("user_base_findInfo_urls", uselist=False))

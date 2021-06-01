@@ -57,9 +57,7 @@ def FindInfoFinalData(query):
             wiki_image_list = wiki_pg.images
             wiki_url = wiki_pg.url
 
-    print(results)
-
-    results = [str(x[0])+"##^^33^^##"+str(x[1])+"##^^33^^##"+str(x[2])+"##^^33^^##"+str(x[3]) for x in results]
+    results = [str(x[0])+"#^3^#"+str(x[1])+"#^3^#"+str(x[2])+"#^3^#"+str(x[3]) for x in results]
 
     return [results,wiki_summary,wiki_image_list, wiki_url]
 

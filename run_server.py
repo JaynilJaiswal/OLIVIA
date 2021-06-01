@@ -41,9 +41,9 @@ db.create_all()
 geolocator = Nominatim(user_agent="geoapiExercises")
 
 
-STT_href = "http://94b866a6d72d.ngrok.io/"
-TTS_href = "http://7c9205651746.ngrok.io/"
-NLU_href = "http://ec95de935059.ngrok.io/"
+STT_href = "http://7d3e470cb880.ngrok.io/"
+TTS_href = "http://5a1eac9d279b.ngrok.io/"
+NLU_href = "http://926aa768f2e9.ngrok.io/"
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
@@ -260,16 +260,16 @@ def select_feature(name, user_data, query):
         
         [results,wiki_summary,wiki_image_list, wiki_url] = FindInfoFinalData(context_detail)
 
-        session["findInfo-results"] = "###--###".join(results)
-        session["findInfo-wiki_summary"] = wiki_summary
-        session["findInfo-wiki_image_list"] = "###--###".join(wiki_image_list)
-        session["findInfo-wiki_url"] = wiki_url
+        session["findInfo-results"] = "#-#".join(results)
+        # session["findInfo-wiki_summary"] = wiki_summary
+        # session["findInfo-wiki_image_list"] = "###--###".join(wiki_image_list)
+        # session["findInfo-wiki_url"] = wiki_url
 
         if wiki_summary=="":
             return ["Displaying information for "+context_detail+" on your screen.", "find-information"]
         
         vocal_wiki_summary_output = ". ".join(wiki_summary.split(". ")[:2])
-        return ["Sir, " + vocal_wiki_summary_output + " Other related articles, images and web links are displayed on your screen.", "find-information"]
+        return ["Sir, " + vocal_wiki_summary_output + "..... Other related articles and web links are displayed on your screen.", "find-information"]
 
     if name == "call":
         return ["Feature to be added soon.", "call"]
@@ -872,7 +872,7 @@ def getMusicDetails_toShow():
 @app.route("/getFindInfoDetails_toShow",methods=["GET"])
 def getFindInfoDetails_toShow():
     if request.method == "GET":
-        return session["findInfo-results"] + "|||##||##||##|||" + session["findInfo-wiki_summary"] + "|||##||##||##|||" + session["findInfo-wiki_image_list"] + "|||##||##||##|||" + session["findInfo-wiki_url"]
+        return session["findInfo-results"]
 
 if __name__ == "__main__":
     app.run(debug=True)
