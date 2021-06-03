@@ -189,7 +189,7 @@ function additional_request(feature_just_selected, duration_sleep) {
 
             var findinfoDiv = document.getElementById('findInfoContent')
 
-            var texthtml = "<span onclick='document.getElementById('findInfo-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500); reset();' class='close'>&times;</span><br/><br/><h1 style='color: rgb(6, 10, 27);'>Information Found</h1>";
+            var texthtml = "<span onclick=\"document.getElementById('findInfo-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500); reset();\" class='close'>&times;</span><br/><br/><h1 style='color: rgb(6, 10, 27);'>Information Found</h1>";
 
             for (var k=0;k<findInfo_urls.length;k++)
             {
