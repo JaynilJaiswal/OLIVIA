@@ -9,7 +9,7 @@ Here is the workflow UI for the idea of our digital assistant.
 
 ![Workflow_UI](https://github.com/RonnieGandhi/ENJOY-Enhanced-Neurons-Juicing-Operations-Youthfully/blob/main/workflow_ui.png)
 
-![Link to Report](https://drive.google.com/file/d/1PL7dC4ZpeSq2ZF5GM51lRNWBjl858p3l/view?usp=sharing)
+[Link to Report](#https://drive.google.com/file/d/1PL7dC4ZpeSq2ZF5GM51lRNWBjl858p3l/view?usp=sharing)
 
 ## Module Specifications:
 
