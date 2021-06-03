@@ -66,6 +66,7 @@ def getSearchResults(query):
     #             # Due to Dogpile, code is giving TypeError: search() missing 1 required positional argument: 'query', so keeping it at last argument
     #             # Mojeek and Torch giving 403 and timout errors
 
-    results = [Google().search(query).links(), Bing().search(query).links(), Yahoo().search(query).links()]
+    # results = [Google().search(query).links(), Bing().search(query).links(), Yahoo().search(query).links()]
+    results = [Google().search(query).links()]
     return set().union(*results)
 

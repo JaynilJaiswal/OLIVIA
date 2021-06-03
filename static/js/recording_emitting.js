@@ -189,7 +189,7 @@ function additional_request(feature_just_selected, duration_sleep) {
 
             var findinfoDiv = document.getElementById('findInfoContent')
 
-            var linebreak = document.createElement("br");
+            var texthtml = "";
 
             for (var k=0;k<findInfo_urls.length;k++)
             {
@@ -200,56 +200,11 @@ function additional_request(feature_just_selected, duration_sleep) {
                 findInfo_urls_image = findInfo_urls_data[2]
                 findInfo_urls_desc = findInfo_urls_data[3]
 
-                
+                var text = "<a href='"+findInfo_urls_data[0]+"' title='"+findInfo_urls_data[1]+"'  target='_blank'><div class='card'><div class='card_left'><img src='"+ findInfo_urls_data[2] +"' onerror=this.src='../static/images/noImgFount.jpg'></div><div class='card_right'><h1>"+findInfo_urls_data[1]+"</h1><div class='card_right__review'><p>"+findInfo_urls_data[3]+"</p></div></div></div></a><br/>";
 
-                var card = document.createElement("div");
-                card.className="card";
+                texthtml = texthtml+ text;
 
-
-                var makeAnch = document.createElement("a");
-                makeAnch.setAttribute("href", findInfo_urls_data[0]);
-                makeAnch.setAttribute("title",findInfo_urls_data[1]);
-                makeAnch.setAttribute("target","_blank");
-
-                var card_left = document.createElement("div");
-                card_left.className="card_left";
-
-                var card_image = document.createElement("img");
-                
-                var card_right = document.createElement("div");
-                card_right.className="card_right";
-                var cr_h1 = document.createElement("h1");
-                cr_h1.text = findInfo_urls_data[1];
-                var card_right_det = document.createElement("div");
-                card_right_det.className="card_right__review";
-                var cr_p = document.createElement("p");
-                cr_p.text = findInfo_urls_data[3];
-
-                
-                try{
-                    card_image.src = findInfo_urls_data[2];
-                }
-                catch(error){
-                    card_image.src = "https://static.wikia.nocookie.net/nopixel/images/b/b4/Not-found-image-15383864787lu.jpg";
-                }
-                
-                
-                card_left.appendChild(card_image);
-                
-                card_right.appendChild(cr_h1);
-                card_right_det.appendChild(cr_p);
-
-                card_right.appendChild(linebreak);
-                card_right.appendChild(card_right_det);
-
-                makeAnch.appendChild(card_left);
-                makeAnch.appendChild(card_right);
-                
-                card.appendChild(makeAnch);
-
-                findinfoDiv.appendChild(card);
-
-                findinfoDiv.appendChild(linebreak);
+                findinfoDiv.innerHTML = texthtml;
             }
         }
 

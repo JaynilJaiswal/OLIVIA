@@ -68,6 +68,7 @@
         }
 
         .FindInfo-modal-content{
+        display: block;
         background-color: #e2e2e2;
         position: absolute;
         top:0px;
@@ -92,14 +93,6 @@
         }
 
         
-        /* .UrlDiv {
-        display: flex;
-        top:0px;
-        left:0px;
-        height: 100%;
-        width: 100%;
-        overflow: auto;
-        }*/
 
         /* If you want the content centered horizontally and vertically */
         .centered {
@@ -176,7 +169,6 @@
         -moz-border-radius: 10px;
         box-shadow: 0px 20px 30px 3px rgba(0, 0, 0, 0.55);
         }
-        
         .card_left {
         width: 20%;
         height: 100%;
@@ -268,8 +260,6 @@
     <div id="findInfo-modal" class="modal">
         <div id="findInfoContent" class="FindInfo-modal-content animate">
             <span onclick="document.getElementById('findInfo-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500); reset();" class="close">&times;</span><br/><br/>
-            <!-- <div id="UrlDiv" class="UrlDiv">
-            </div> -->
         </div>
     </div>
 </body>

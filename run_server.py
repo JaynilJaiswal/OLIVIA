@@ -368,7 +368,6 @@ def get_associated_text(query, feature):
                 return query.split("details for")[1]
             elif "details in regards to" in query:
                 return query.split("details in regards to")[1]
-        
         else:
             return query
     return
