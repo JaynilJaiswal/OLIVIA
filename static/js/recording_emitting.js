@@ -187,7 +187,7 @@ function additional_request(feature_just_selected, duration_sleep) {
 
             var findInfo_urls = findInfoData.split("#-#")
 
-            var findinfoDiv = document.getElementById('UrlDiv')
+            var findinfoDiv = document.getElementById('findInfoContent')
 
             var linebreak = document.createElement("br");
 
@@ -230,7 +230,7 @@ function additional_request(feature_just_selected, duration_sleep) {
                     card_image.src = findInfo_urls_data[2];
                 }
                 catch(error){
-                    card_image.src = "https://static.wikia.nocookie.net/nopixel/images/b/b4/Not-found-image-15383864787lu.jpg/revision/latest?cb=20200910062142";
+                    card_image.src = "https://static.wikia.nocookie.net/nopixel/images/b/b4/Not-found-image-15383864787lu.jpg";
                 }
                 
                 

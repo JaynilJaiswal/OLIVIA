@@ -41,9 +41,10 @@ db.create_all()
 geolocator = Nominatim(user_agent="geoapiExercises")
 
 
-STT_href = "http://e3e800e08f0b.ngrok.io/"
-TTS_href = "http://5d24e3c47e3c.ngrok.io/"
-NLU_href = "http://926aa768f2e9.ngrok.io/"
+STT_href = "http://127.0.0.1:5002"
+TTS_href = "http://127.0.0.1:5001"
+NLU_href = "http://127.0.0.1:5003"
+
 audio_classifier = AudioClassifier()
 
 base_inp_dir = "filesystem_for_data/Audio_input_files/"
