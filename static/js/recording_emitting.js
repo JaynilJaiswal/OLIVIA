@@ -202,6 +202,7 @@ function additional_request(feature_just_selected, duration_sleep) {
 
                 var text = "<a href='"+findInfo_urls_data[0]+"' title='"+findInfo_urls_data[1]+"'  target='_blank'><div class='card'><div class='card_left'><img src='"+ findInfo_urls_data[2] +"' onerror=this.src='../static/images/noImgFount.jpg'></div><div class='card_right'><h1>"+findInfo_urls_data[1]+"</h1><div class='card_right__review'><p>"+findInfo_urls_data[3]+"</p></div></div></div></a><br/>";
 
+                
                 texthtml = texthtml+ text;
 
                 findinfoDiv.innerHTML = texthtml;
