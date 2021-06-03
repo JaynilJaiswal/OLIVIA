@@ -12,10 +12,9 @@
     <style>
         body { background-image: url("../static/images/VA_anim4-0.png"); background-repeat: no-repeat; background-size: 100%; background-position-y: -180px; background-color: rgb(6, 10, 27);}
         h1 {text-align: center; color:#04d9ff;}
-        p  {text-align: center;}
         h2 {text-align: center; color: #04d9ff;}
         ol {text-align: center; color: #04d9ff;}
-        div {
+        .mic-box {
             position: relative;
             top: 60px;
             left: 438px;
@@ -47,15 +46,15 @@
         .modal {
         display: none; /* Hidden by default */
         position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
         left: 0;
         top: 0;
         width: 100%; /* Full width */
-        height: 100%; /* Full height */
+        height: 98%; /* Full height */
         background-color: rgb(0,0,0); /* Fallback color */
         background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
         padding-top: 10px;
         }
+
 
         /* Modal Content/Box */
         .modal-content {
@@ -73,12 +72,22 @@
         position: relative;
         top:0px;
         left:300px;
+        align-items: center;
         margin: 10px 0 5px 0; /* 5% from the top, 15% from the bottom and centered  */
         border-radius: 5%;
-        width: 50%; /* Could be more or less, depending on screen size */
+        width: 60%; /* Could be more or less, depending on screen size */
         height: 90%;
-        padding-left: 5px;
+        padding-left: 2%;
+        padding-top: 2%;
+        padding-bottom: 2%;
         overflow: auto;
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+        }
+
+        .FindInfo-modal-content::-webkit-scrollbar {
+        width: 0;  /* Remove scrollbar space */
+        background: transparent;  /* Optional: just make scrollbar invisible */
         }
         
         
@@ -161,15 +170,19 @@
         @import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
 
         .card {
-        width: 100%;
-        height: 30%;
+        width: 95%;
+        height: 25%;
         background: transparent;
         border-radius: 10px;
         -webkit-border-radius: 10px;
         -moz-border-radius: 10px;
         box-shadow: 0px 20px 30px 3px rgba(0, 0, 0, 0.55);
         }
+
+
         .card_left {
+        left: 0;
+        top:0;
         width: 20%;
         height: 100%;
         float: left;
@@ -185,29 +198,33 @@
         position: relative;
         }
         .card_right {
+        left:0;
+        top:0;
         width: 80%;
         float: left;
         background: #ffffff;
         height: 100%;
+        overflow: hidden;
         border-radius: 0 10px 10px 0;
         -webkit-border-radius: 0 10px 10px 0;
         -moz-border-radius: 0 10px 10px 0;
         }
         .card_right h1 {
         color: black;
-        font-family: "Arial", black;
-        font-weight: 500;
+        font-weight: 600;
         text-align: left;
-        font-size: 18px;
+        font-size: 20px;
         margin: px 0 0 0;
         padding: 0 0 0 5px;
         letter-spacing: 1px;
         }
 
-        .card_right__review p {
+        .card_right__review{
+        left:0;
+        top: 0;
         color: black;
         font-family: "Montserrat", sans-serif;
-        font-size: 12px;
+        font-size: 18px;
         position: relative;
         overflow: hidden;
         }
@@ -215,7 +232,7 @@
 </head>
 <body>
     <h1>Hello {{fname}}!</h1>
-    <div id="mic-box" onclick="ListeningMode()"></div>
+    <div id="mic-box" class="mic-box" onclick="ListeningMode()"></div>
     <audio id="output_voice" style="display:none;" autoplay></audio>
     <audio id ="default-messages" style="display:none;" controls autoplay ></audio>
     <h1 id="getWeclome_msg" style="display:none;">{{getWelcome_msg}}</h1>
@@ -260,7 +277,6 @@
     </div>
     <div id="findInfo-modal" class="modal">
         <div id="findInfoContent" class="FindInfo-modal-content animate">
-            <span onclick="document.getElementById('findInfo-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500); reset();" class="close">&times;</span><br/><br/>
         </div>
     </div>
 </body>

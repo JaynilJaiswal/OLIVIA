@@ -189,7 +189,7 @@ function additional_request(feature_just_selected, duration_sleep) {
 
             var findinfoDiv = document.getElementById('findInfoContent')
 
-            var texthtml = "";
+            var texthtml = "<span onclick='document.getElementById('findInfo-modal').style.display = 'none'; interrupt = 'no'; recordMode(1500); reset();' class='close'>&times;</span><br/><br/><h1 style='color: rgb(6, 10, 27);'>Information Found</h1>";
 
             for (var k=0;k<findInfo_urls.length;k++)
             {
@@ -200,9 +200,9 @@ function additional_request(feature_just_selected, duration_sleep) {
                 findInfo_urls_image = findInfo_urls_data[2]
                 findInfo_urls_desc = findInfo_urls_data[3]
 
-                var text = "<a href='"+findInfo_urls_data[0]+"' title='"+findInfo_urls_data[1]+"'  target='_blank'><div class='card'><div class='card_left'><img src='"+ findInfo_urls_data[2] +"' onerror=this.src='../static/images/noImgFount.jpg'></div><div class='card_right'><h1>"+findInfo_urls_data[1]+"</h1><div class='card_right__review'><p>"+findInfo_urls_data[3]+"</p></div></div></div></a><br/>";
+                var text = "<div class='card'><a class ='card a' href='"+findInfo_urls_data[0]+"' title='"+findInfo_urls_data[1]+"'  target='_blank'><div class='card_left'><img src='"+ findInfo_urls_data[2] +"' onerror=this.src='../static/images/noImgFount.jpg'></div><div class='card_right'><h1>"+findInfo_urls_data[1]+"</h1><p class='card_right__review'>"+findInfo_urls_data[3]+"</p></div></a></div><br/>";
 
-                
+
                 texthtml = texthtml+ text;
 
                 findinfoDiv.innerHTML = texthtml;
