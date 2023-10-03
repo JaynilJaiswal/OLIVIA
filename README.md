@@ -1,4 +1,4 @@
-# OLIVIA: Obedient Light Intelligent Voice Interactive Assistant 
+# OLIVIA: Optimized Light Intelligent Voice Interactive Assistant 
 ### This is a Digital Assitant capable of handling various tasks based on voice commands.
 #### B.tech project Computer Science IIT Roorkee
 **Students**: Gandhi Ronnie and Jaynil Jaiswal.
