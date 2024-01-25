@@ -6,6 +6,7 @@
 **Mentored by**: Prof. Partha Pratim Roy
 
 # <a href="https://drive.google.com/file/d/1PL7dC4ZpeSq2ZF5GM51lRNWBjl858p3l/view?usp=sharing" target="_blank">Link to Report</a>
+# <a href="https://www.youtube.com/watch?v=OpqlN1_icvM" target="_blank">Youtube Video</a>
 
 Here is the workflow UI for the idea of our digital assistant.
 
